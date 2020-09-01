@@ -17,17 +17,14 @@
 % Topic, goal and relevance 
 % A clear definition of the topic, goals and relevance will leave the reader with no doubt about the intended coverage and contribution of the thesis. The definitions should include a project outline and clear statement of purpose. Student initiative should be demonstrated.
 
-\begin{abstract}
-    \textbf{- Analysis at application level for the C language.}
 
-    Come back to the abstract later, since I can't think of the words to write right now, so instead, have some Lorem Ipsum.
+\textbf{\textit{Abstract} - Analysis at application level for the C language. Come back to the abstract later, since I can't think of the words to write right now, so instead, have some Lorem Ipsum.}
 
-    \textbf{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vestibulum ultricies euismod. Duis turpis augue, tempor eget ligula in, malesuada pulvinar mi. Maecenas elementum dolor diam, ut condimentum est dapibus ac. Morbi sed molestie ipsum, vel varius mi. Mauris quis ex sed massa efficitur varius. Curabitur elementum, odio at faucibus rutrum, velit erat ullamcorper mauris, non maximus magna orci a mi. Donec sed condimentum ipsum. Interdum et malesuada fames ac ante ipsum primis in faucibus.}
-\end{abstract}
+\textbf{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vestibulum ultricies euismod. Duis turpis augue, tempor eget ligula in, malesuada pulvinar mi. Maecenas elementum dolor diam, ut condimentum est dapibus ac. Morbi sed molestie ipsum, vel varius mi. Mauris quis ex sed massa efficitur varius. Curabitur elementum, odio at faucibus rutrum, velit erat ullamcorper mauris, non maximus magna orci a mi. Donec sed condimentum ipsum. Interdum et malesuada fames ac ante ipsum primis in faucibus.}
 
 \section{Background}
 TODO: Brief overview of the background of the topic
-
+- provide a tool to analyse 
 \subsection{Information Security}
 Vulnerabilities in software can lead to catastrophic consequences when manipulated by attackers. \textit{Example in here?}
 % Maybe talk about heartbleed?
@@ -35,10 +32,7 @@ Vulnerabilities in software can lead to catastrophic consequences when manipulat
 Computer security is defined as a preservation of \textbf{integrity}, \textbf{availability} and \textbf{confidentiality} of information, and extends to include not only software but hardware, firmware, information, data and telecommunications \cite{guttman1995introduction}.
 Confidentiality requires that data is not available to unauthorised users, and that individuals can control what information can be collected and disclosed to others. Data integrity requires that only authorised sources can modify data, and that the system can perform tasks without interference from outside sources. Finally, availability of a system requires that service is not denied to authorised users. Together, these principles create the CIA triad \cite{stallings2012computer}. To enforce a secure system, all three principles must be upheld.
 
-% Not sure if this paragraph is really needed?
 Modern programs are becoming increasingly complex with potential for networking, multi-threading and storage permissions and more. As such, security mechanisms must be put in place to verify and enforce the information security requirements. The adequacy of a security mechanism depends on the adversary model. The adversary model is a formal definition of the attacker and their abilities in a system, and defines who we are protecting against \cite{do2019role}. Ideally we would like to design a system to protect against the strongest adversary or attacker, however, this is often not required or even possible. Instead, we must consider the security policy, security mechanism and strongest adversary model to make a system secure \cite{balliu2014logics}.
-
-\textit{Not sure if this \^{} paragraph is needed. Alternatively I could discuss in more detail what a security policy and security mechanism is}
 
 Standard security processes that handle access control such as a firewall or antivirus software can fail as they do not constrain where information is allowed to flow, meaning that once access is granted it can propagate to insecure processes where it can be accessed by attackers. Where a large system is being used, it is often the case that not all components of the codebase can be trusted, often containing potentially malicious code \cite{sabelfeld2003language}. Take for example your modern-day web project. Where a package manager such as Node Package Manager (npm) could be used to utilise open-source packages to speed up development progress, it could also inadvertently introduce security vulnerabilities. Rewriting all packages used to ensure security would be time-consuming and expensive and is not a viable option. Instead, controlling where information can flow and preventing secure data from flowing into untrusted sources or packages can maintain confidentiality of a system.
 
@@ -75,9 +69,35 @@ Many security levels can be identified to classify different classes of objects,
 \subsection{Information Flow Security in Concurrency}
 Controlling the flow of information is a difficult problem, however, this is only exacerbated in concurrent programs, which are a well known source of security issues \cite{mantel2014noninterference}\cite{smith2019value}\cite{vaughan2012secure}. Research has been conducted into concurrent programs to explore ways the security of concurrent programs can be verified. Mantel et al. \cite{mantel2011assumptions} introduced the concept of assumption and guarantee conditions, where assumptions are made about how concurrent threads access shared memory and guarantees are made about how an individual thread access shared memory that other threads may rely upon. Each thread can be observed individually using assumptions that can be then used to prove a guarantee about that individual thread. This concept of assumptions (or rely) and guarantee conditions can reduce the complexity of dealing with concurrency in threads and assist in verifying the correctness of information flow security in concurrency. However, this approach is limited in the types of assumptions and guarantees it supports. Building on this, Murray et al. \cite{ernst2019seccsl} \cite{murray2018covern} provide information flow logic on how to handle dynamic, value-dependent security levels in concurrent programs. In this case, the security level of a particular variable may depend on one or more other variables in the program. As such, the variable's security level can change as the state of the program changes. This logic is essential where the security level of data depends on its source. However, this approach is not sufficient when analysing non-blocking programs. The approach relies heavily on locks which block particular threads from executing. This in turn leads to slower processing due to blocked threads \cite{prakash1991non}.
 
-To overcome information flow security in non-blocking concurrent threads, Winter et al. \cite{winter2020information} explores verifying security properties such as non-interference through the use of general rely/guarantee conditions using backwards, weakest precondition reasoning. This thesis will focus on the compilation stage of this process.
+To overcome information flow security in non-blocking concurrent threads, Winter et al. \cite{winter2020information} explores verifying security properties such as non-interference through the use of general rely/guarantee conditions using backwards, weakest precondition reasoning. Ideally a tool could be created to verify security policies required for sensitive processes. Users of this system could provide rely/guarantee conditions for each thread as well as security levels for data and variables i.e. high or low data and variables. Working backwards through the execution of the program, violations of the security policy will be detected. Detected violations could be due to an incorrect assumption of the rely and guarantee conditions or a failure to uphold the security policy. This thesis will focus on the compilation stage of this tool.
+% TODO: Talk more about wpif, not sure what exactly to discuss about it here? - implicit & explicit, - user defined rely/guarantee conditions - uses of a tool?
+% Is it a static analysis of the binary of a compiled program?
+% I'd like to include a diagram here to show how the tool would be used
 
-\subsection{}
+\subsection{Compilers and Security}
+
+- Compilers are a weak link between source code that has provided a security guarantee and the hardware executing security guarantees
+- Source code can be verified/proven for correctness, however, compiler optimisations can occur that break the guarantees verified in the source code - look at crypt example CWE-13 \&{} CWE-733
+- optimisations such as dead store elimination can be proved formally correct, however memory is left in a state that does not follow programmer's expectations and thus can violate security guarantees verified in source code
+- aka the Correctness Security Gap
+- To correctly analyse the correctness of information flow security policies, analysis must be conducted after compilation to a binary to detect compiler optimisations that violate these security policies.
+- Statically generated annotations as a solution
+
+Although one could analyse each individual compiler optimisation to check for potential security violations in source code, defensively programming against the compiler can be counter-initiative. Instead, the proposed tool looks to automate this process and provide the user with feedback on the security of their concurrent programs. 
+
+\section{Similar Solutions}
+- Safety-critical, real-time software such as flight control systems require worst-case execution time analysis to prove correctness.
+-  AbsInt analyses worst case execution time using static analysis tools alongside compiler annotations.
+- Using CompCert: Supports annotation via \_\_builtin\_annot() - places comment in generated assembly code. Additional tool can be used to parse comments and generate annotations
+- Optimisations can remove annotations - need to verify annotations propagated through
+- Downfall: treatment as a call to an external function, cannot be placed at top-level of compilation unit unlike a var declaration.
+
+- The ENTRA (Whole-Systems ENergy TRAnsparency) Deliverable describe mechanism to transfer properties from the source to the machine level.
+- Comments need to be extracted from assembler files, not stored in final binary
+
+- Li, Puat and Rohou present framework where source code annotations are transformed into annotations on the binary level
+- Focus on loop count annotations and preservation through classic loop optimisations
+
 
 \subsection{TODO}
 Still a lot of goodness to discuss:
@@ -86,6 +106,7 @@ Still a lot of goodness to discuss:
     \item How compiler annotations can be used to assist analysis using WPIF
     \item Existing solutions for compiler annotations
     \item Discussion about modifying / not modifying compiler - approach
+    \item GCC plugins: https://gcc.gnu.org/wiki/plugins
 \end{enumerate}
 
 % - WPIF
