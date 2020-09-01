@@ -1,6 +1,9 @@
 \documentclass[twocolumn]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{biblatex}
+\usepackage{listings}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
 \addbibresource{bibliography.bib}
 
 
@@ -12,10 +15,80 @@
     \maketitle
 
     \section{Introduction}
+    % Topic, goal and relevance 
+    % A clear definition of the topic, goals and relevance will leave the reader with no doubt about the intended coverage and contribution of the thesis. The definitions should include a project outline and clear statement of purpose. Student initiative should be demonstrated.
+    - Analysis at application level for the C language. 
     
-    Security is a major focus point of \cite{einstein}
+    Come back to the introduction later, since I can't think of the words to write right now, so instead, have some Lorem Ipsum.
+
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vestibulum ultricies euismod. Duis turpis augue, tempor eget ligula in, malesuada pulvinar mi. Maecenas elementum dolor diam, ut condimentum est dapibus ac. Morbi sed molestie ipsum, vel varius mi. Mauris quis ex sed massa efficitur varius. Curabitur elementum, odio at faucibus rutrum, velit erat ullamcorper mauris, non maximus magna orci a mi. Donec sed condimentum ipsum. Interdum et malesuada fames ac ante ipsum primis in faucibus. Morbi consequat tellus est, ut commodo orci condimentum ac. Donec dapibus efficitur eros sed iaculis. Cras viverra consequat nisi nec dictum. Quisque mattis ultricies tincidunt. Sed vitae mattis erat, vitae condimentum odio. Suspendisse sed efficitur odio, vel iaculis nunc. Sed sodales pharetra metus, vel ultricies nisi tincidunt vitae.
+
+    \subsection{Information Security}
+    Vulnerabilities in software can lead to catastrophic consequences when manipulated by attackers. \textit{Example in here?}
+    % Maybe talk about heartbleed?
+
+    Computer security is defined as a preservation of \textbf{integrity}, \textbf{availability} and \textbf{confidentiality} of information, and extends to include not only software but hardware, firmware, information, data and telecommunications \cite{guttman1995introduction}.
+    Confidentiality requires that data is not available to unauthorised users, and that individuals can control what information can be collected and disclosed to others. Data integrity requires that only authorised sources can modify data, and that the system can perform tasks without interference from outside sources. Finally, availability of a system requires that service is not denied to authorised users. Together, these principles create the CIA triad \cite{stallings2012computer}. To enforce a secure system, all three principles must be upheld.
+
+    % Not sure if this paragraph is really needed?
+    Modern programs are becoming increasingly complex with potential for networking, multi-threading and storage permissions and more. As such, security mechanisms must be put in place to verify and enforce the information security requirements. The adequacy of a security mechanism depends on the adversary model. The adversary model is a formal definition of the attacker and their abilities in a system, and defines who we are protecting against \cite{do2019role}. Ideally we would like to design a system to protect against the strongest adversary or attacker, however, this is often not required or even possible. Instead, we must consider the security policy, security mechanism and strongest adversary model to make a system secure \cite{balliu2014logics}.
+    
+    Standard security processes that handle access control such as a firewall or antivirus software can fail as they do not constrain where information is allowed to flow, meaning that once access is granted it can propagate to insecure processes where it can be accessed by attackers. Where a large system is being used, it is often the case that not all components of the codebase can be trusted, often containing potentially malicious code \cite{sabelfeld2003language}. Take for example your modern-day web project. Where a package manager such as Node Package Manager (npm) could be used to utilise open-source packages to speed up development progress, it could also inadvertently introduce security vulnerabilities. Rewriting all packages used to ensure security would be time-consuming and expensive and is not a viable option. Instead, controlling where information can flow and preventing secure data from flowing into untrusted sources or packages can maintain confidentiality of a system. 
+    
+    One may suggest runtime monitoring the flow of data to prevent leakage of secure data. Aside from the obvious computational and memory overhead, this method can have its own issues. Although it can detect an \textit{explicit} flow of data from a secure variable to a public variable, it is unable to detect \textit{implicit} data flow, where the state of secure data can be inferred from the state of public data or a public variable \cite{denning1977certification}. Take for example figure \ref{fig:implicit}. In this example, a public, readable variable is initially set to the value of 1. There is also a secret variable which may contain a key, password or some other secret that must be kept secure from any attackers. Depending on the value of the secret variable an attacker can infer information about this variable depending on whether the value of the public variable is updated to a value of 0. Assuming that the inner workings of the system is known by the attacker, information about the secret variable can be leaked \textit{implicitly} and inferred by the state of public variables.
+
+    \textit{Do we care about implicit flow in this thesis? Or are we only focussing on explicit flow through concurrency?}
+
+    % Do we care about implicit flow in this thesis? Or are we only focussing on explicit flow through concurrency?
+
+    \begin{figure}
+        \label{fig:implicit}
+        \begin{lstlisting}[gobble=2]
+            secret := 0xC0DE mod 2
+            public := 1
+            if secret = 1
+                public := 0
+        \end{lstlisting}
+        \caption{Implicit flow of data to a public variable}
+    \end{figure}
+
+    Security concerns do not only exist at the application level. In a huge codebase such as an OS, different low-level bugs can be exploited to gain access to data, such as by using buffer overflows to inject viruses or trojans \cite{agten2012recent}. However, most security failures are due to security violations introduced at the application level \cite{jang2010empirical}. Therefore, this thesis will focus primarily on security concerns at the high level.
+
+    \subsection{Information Flow Control}
+    As seen by the issues that can be introduced via implicit and explicit flow of data, there is room to improve on the existing techniques imposed by current security measures. To protect confidentiality, secure or sensitive information must be prevented from flowing into public on insecure variables. Additionally, to protect integrity, untrusted data from public sources must be prevented from flowing into secure or trusted destinations \textit{From my understanding, we don't care about this in this thesis?} \cite{balliu2014logics}. An information flow security policy can be introduced to classify or label data, or more formally, a set of \textit{security levels} to which each object is bound by across a multi-level security lattice \cite{denning1976lattice}. 
+    
+    Many security levels can be identified to classify different classes of objects, however, for now we will consider two security levels: high and low. Data labelled as high signifies that the data is secret, and low data is classified as non-sensitive data, such that it does not need to be protected from the attacker or adversary. Variables that can hold data in a program can additionally be classified as high or low as a \textit{security classification}. A variable's security classification shows the highest classification of data it can safely contain. A high variable can hold both high and low data, whereas a low variable which is visible to an attacker can only safely hold low data. As mentioned previously, confidentiality must be upheld by preventing high or secret data from flowing to low or public variables where an attacker can observe it. The permitted flow of data can be observed in \ref{fig:flow}. Note that high data is not allowed to flow into low variables. 
+    
+    \begin{figure}
+        \label{fig:flow}
+        \includegraphics{flow.png}
+        \caption{Permitted flow of data}
+    \end{figure}
+
+    \subsection{Information Flow Security in Concurrency}
+    Controlling the flow of information is a difficult problem, however, this is only exacerbated in concurrent programs, which are a well known source of security issues \cite{mantel2014noninterference}\cite{smith2019value}\cite{vaughan2012secure}. Research has been conducted into concurrent programs 
+
+    \cite{winter2020concurrency}
+
+    \subsection{TODO}
+
+    % - WPIF
+
+    % - The Correctness Security Gap
+
+    % - Language-based security
+    %     - Java language-based security
+    %     - Annotations as a solution
+
+    % - Avoid modifying Compiler
+    %     - reduce complexity
+    %     - avoid updating tool for each compiler update
+    %     - potential for reusability for other languages / compilers
+
+    \section{Existing Solutions}
+
+    - Mandatory Access control % See: Language-Based Information-Flow Security Andrei Sabelfeld and Andrew C. Myers
 
     \printbibliography
-    
 \end{document}
 
