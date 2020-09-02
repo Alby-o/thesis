@@ -18,9 +18,7 @@
 % A clear definition of the topic, goals and relevance will leave the reader with no doubt about the intended coverage and contribution of the thesis. The definitions should include a project outline and clear statement of purpose. Student initiative should be demonstrated.
 
 
-\textbf{\textit{Abstract} - Come back to the abstract later, since I can't think of the words to write right now, so instead, have some Lorem Ipsum.}
-
-\textbf{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vestibulum ultricies euismod. Duis turpis augue, tempor eget ligula in, malesuada pulvinar mi. Maecenas elementum dolor diam, ut condimentum est dapibus ac. Morbi sed molestie ipsum, vel varius mi. Mauris quis ex sed massa efficitur varius. Curabitur elementum, odio at faucibus rutrum, velit erat ullamcorper mauris, non maximus magna orci a mi. Donec sed condimentum ipsum. Interdum et malesuada fames ac ante ipsum primis in faucibus.}
+\textbf{\textit{Abstract} - Information flow security in concurrency is difficult due to the increasing complexity introduced with multiple threads. Additionally, compiler optimisations that can break security guarantees that have been verified in source code. In this paper, we propose a thesis to explore these issues through providing annotations in C source code that propagate through to the binary to perform a static analysis of information flow security in concurrency. This approach involves (1) capturing C source code annotations provided by the user about the security policy of data and variables and (2) passing these annotations down to the binary where static analysis tools can be utilised to identify security vulnerabilities in the produced binary. }
 
 \section{Topic Definition}
 TODO: Brief overview of the background of the topic
@@ -32,11 +30,10 @@ TODO: Brief overview of the background of the topic
 - Explore ways to preserve annotations in C through compilation to binary with minimal modification to the compiler
 
 \section{Background}
-TODO: Introduction to background
-
-\subsection{Information Security}
 Vulnerabilities in software can lead to catastrophic consequences when manipulated by attackers. \textit{Example in here?}
 % Maybe talk about heartbleed?
+
+\subsection{Information Security}
 
 Computer security is defined as a preservation of \textbf{integrity}, \textbf{availability} and \textbf{confidentiality} of information, and extends to include not only software but hardware, firmware, information, data and telecommunications \cite{guttman1995introduction}.
 Confidentiality requires that data is not available to unauthorised users, and that individuals can control what information can be collected and disclosed to others. Data integrity requires that only authorised sources can modify data, and that the system can perform tasks without interference from outside sources. Finally, availability of a system requires that service is not denied to authorised users. Together, these principles create the CIA triad \cite{stallings2012computer}. To enforce a secure system, all three principles must be upheld.
@@ -46,10 +43,6 @@ Modern programs are becoming increasingly complex with potential for networking,
 Standard security processes that handle access control such as a firewall or antivirus software can fail as they do not constrain where information is allowed to flow, meaning that once access is granted it can propagate to insecure processes where it can be accessed by attackers. Where a large system is being used, it is often the case that not all components of the codebase can be trusted, often containing potentially malicious code \cite{sabelfeld2003language}. Take for example your modern-day web project. Where a package manager such as Node Package Manager (npm) could be used to utilise open-source packages to speed up development progress, it could also inadvertently introduce security vulnerabilities. Rewriting all packages used to ensure security would be time-consuming and expensive and is not a viable option. Instead, controlling where information can flow and preventing secure data from flowing into untrusted sources or packages can maintain confidentiality of a system.
 
 One may suggest runtime monitoring the flow of data to prevent leakage of secure data. Aside from the obvious computational and memory overhead, this method can have its own issues. Although it can detect an \textit{explicit} flow of data from a secure variable to a public variable, it is unable to detect \textit{implicit} data flow, where the state of secure data can be inferred from the state of public data or a public variable \cite{denning1977certification}. Take for example figure \ref{fig:implicit}. In this example, a public, readable variable is initially set to the value of 1. There is also a secret variable which may contain a key, password or some other secret that must be kept secure from any attackers. Depending on the value of the secret variable an attacker can infer information about this variable depending on whether the value of the public variable is updated to a value of 0. Assuming that the inner workings of the system is known by the attacker, information about the secret variable can be leaked \textit{implicitly} and inferred by the state of public variables.
-
-\textit{Do we care about implicit flow in this thesis? Or are we only focussing on explicit flow through concurrency?}
-
-% Do we care about implicit flow in this thesis? Or are we only focussing on explicit flow through concurrency?
 
 \begin{figure}
     \begin{lstlisting}
@@ -105,21 +98,42 @@ From the perspective of the source code, a programmer would expect the sensitive
 This leads to the question, \textit{what security guarantees in source code are being violated by compiler optimisations?} Although one could analyse each individual compiler optimisation to check for potential security violations in source code, defensively programming against the compiler can be counter-initiative. One might also suggest turning compiler optimisations off, however, this leads to slower code. In a concurrent system where execution time is critical, turning compiler optimisations off is not a viable option. Instead an alternative solution is to perform a static analysis on a binary for security violations. As compilation has already been executed, such analysis would reveal security guarantee violations that result due to compiler optimisations.
 
 \subsection{Similar Solutions}
-In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis can be conducted using static analysis tools to estimate safe upper bounds. In the case of AbsInt's aiT tool this analysis is conducted alongside compiler annotations to assist where loop bounds cannot be computed statically. In these cases, the user can provide annotations to guide the analysis tools \cite{schommer2018embedded}. This tool builds on an existing annotation mechanism that exist in CompCert, a C compiler that has been formally verified for use in life-critical and mission-critical software \cite{compcert}. This approach is able to reliably transmit compiler annotations through to binary through method calls which are carried through compilation and the linked executable without using external annotation files. CompCert prints annotation strings as a comment in the generated assembly code, and an additional tool is used to parse these comments and generate annotations. However, due to its treatment as an external function, annotations cannot be placed at the top level of a compilation unit, unlike a variable declaration. Additionally, care needs to be taken to avoid compiler optimisations removing annotations or rendering annotations inapplicable after optimisation.
+In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis can be conducted using static analysis tools to estimate safe upper bounds. In the case of AbsInt's aiT tool this analysis is conducted alongside compiler annotations to assist where loop bounds cannot be computed statically. In these cases, the user can provide annotations to guide the analysis tools \cite{schommer2018embedded}. This tool builds on an existing annotation mechanism that exist in CompCert, a C compiler that has been formally verified for use in life-critical and mission-critical software \cite{compcert}\cite{leroy2016compcert}. CompCert annotations are not limited to WCET analysis. A general mechanism for attaching free-form annotations that propagate through to assembly files can be achieved with CompCert. This approach is able to reliably transmit compiler annotations through to binary through method calls which are carried through compilation and the linked executable without using external annotation files. CompCert prints annotation strings as a comment in the generated assembly code, and an additional tool is used to parse these comments and generate annotations. However, due to its treatment as an external function, annotations cannot be placed at the top level of a compilation unit, unlike a variable declaration. Additionally, care needs to be taken to avoid compiler optimisations removing annotations or rendering annotations inapplicable after optimisation.
 
-A similar approach to CompCert is used by The ENTRA (Whole-Systems ENergy TRAnsparency). As part of providing a common assertion language, pragmas are used to propagate information through to comments in the assembler files. Information is retained in LLVM IR and ISA representations. However, these annotations are not stored in the final binary and thus comments must be extracted from assembler files \cite{eder2013common}. 
+A similar approach to CompCert is used by The ENTRA (Whole-Systems ENergy TRAnsparency). As part of providing a common assertion language, pragmas are used to propagate information through to comments in the assembler files. Information is retained in LLVM IR and ISA representations. However, these annotations are not stored in the final binary and thus comments must be extracted from assembler files \cite{eder2013common}.
+
+TODO: Discuss Vu et al. approach to compiler annotations through LLVM. 
+ACSL
+% Vu et al. \cite{vu2020secure} explore creating a static analysis tool for analysing code for ... using LLVM that preserve properties through compiler optimisations. 
 
 % Li et al. 
 % - Li, Puat and Rohou present framework where source code annotations are transformed into annotations on the binary level
 % - Focus on loop count annotations and preservation through classic loop optimisations
 
-GCC plugins: https://gcc.gnu.org/wiki/plugins
+% GCC plugins: https://gcc.gnu.org/wiki/plugins
 
 \section{Project Plan}
 
-% - WPIF
+Milestones:
+\begin{itemize}
+    \item Investigation into C Compiler annotation solutions and approaches
+    \begin{itemize}
+        \item Thesis Proposal
+        \item Literature Review
+        \item Source Code inspection of AbsInt's, ENTRA and Vu et al. tools
+        \item Workspace set up
+    \end{itemize}
+    \item Tool development
+    \begin{itemize}
+        \item 
+    \end{itemize}
+    \item Testing \& Correctness evaluation of tool
+    \item Benchmarking and Performance Testing
+\end{itemize}
 
-% - The Correctness Security Gap
+\section{Risk Assessment}
+This project will be conducted primarily using a home workstation. Risk low.
+% - WPIF
 
 % - Language-based security
 %     - Java language-based security
