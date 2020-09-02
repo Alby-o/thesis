@@ -18,13 +18,19 @@
 % A clear definition of the topic, goals and relevance will leave the reader with no doubt about the intended coverage and contribution of the thesis. The definitions should include a project outline and clear statement of purpose. Student initiative should be demonstrated.
 
 
-\textbf{\textit{Abstract} - Analysis at application level for the C language. Come back to the abstract later, since I can't think of the words to write right now, so instead, have some Lorem Ipsum.}
+\textbf{\textit{Abstract} - Come back to the abstract later, since I can't think of the words to write right now, so instead, have some Lorem Ipsum.}
 
 \textbf{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vestibulum ultricies euismod. Duis turpis augue, tempor eget ligula in, malesuada pulvinar mi. Maecenas elementum dolor diam, ut condimentum est dapibus ac. Morbi sed molestie ipsum, vel varius mi. Mauris quis ex sed massa efficitur varius. Curabitur elementum, odio at faucibus rutrum, velit erat ullamcorper mauris, non maximus magna orci a mi. Donec sed condimentum ipsum. Interdum et malesuada fames ac ante ipsum primis in faucibus.}
 
 \section{Background}
 TODO: Brief overview of the background of the topic
-- provide a tool to analyse 
+
+- provide a tool to analyse C programs to detect security violations created through information flow control through wpif.
+
+- Analysis done after compilation to a binary to detect information flow violations introduced by compiler optimisations
+
+- Explore ways to preserve annotations in C through compilation to binary with minimal modification to the compiler
+
 \subsection{Information Security}
 Vulnerabilities in software can lead to catastrophic consequences when manipulated by attackers. \textit{Example in here?}
 % Maybe talk about heartbleed?
@@ -43,14 +49,14 @@ One may suggest runtime monitoring the flow of data to prevent leakage of secure
 % Do we care about implicit flow in this thesis? Or are we only focussing on explicit flow through concurrency?
 
 \begin{figure}
-    \label{fig:implicit}
-    \begin{lstlisting}[gobble=2]
-            secret := 0xC0DE mod 2
-            public := 1
-            if secret = 1
-                public := 0
+    \begin{lstlisting}
+secret := 0xC0DE mod 2
+public := 1
+if secret = 1
+    public := 0
         \end{lstlisting}
     \caption{Implicit flow of data to a public variable}
+    \label{fig:implicit}
 \end{figure}
 
 Security concerns do not only exist at the application level. In a huge codebase such as an OS, different low-level bugs can be exploited to gain access to data, such as by using buffer overflows to inject viruses or trojans \cite{agten2012recent}. However, most security failures are due to security violations introduced at the application level \cite{jang2010empirical}. Therefore, this thesis will focus primarily on security concerns at the high level.
@@ -61,9 +67,9 @@ As seen by the issues that can be introduced via implicit and explicit flow of d
 Many security levels can be identified to classify different classes of objects, however, for now we will consider two security levels: high and low. Data labelled as high signifies that the data is secret, and low data is classified as non-sensitive data, such that it does not need to be protected from an attacker or adversary. Variables that can hold data in a program can additionally be classified as high or low as a \textit{security classification}. A variable's security classification shows the highest classification of data it can safely contain \cite{winter2020information}. A high variable can hold both high and low data, whereas a low variable which is visible to an attacker can only safely hold low data. As mentioned previously, confidentiality must be upheld by preventing high or secret data from flowing to low or public variables where an attacker can observe it. The permitted flow of data can be observed in \ref{fig:flow}. Note that high data is not allowed to flow into low variables.
 
 \begin{figure}
-    \label{fig:flow}
     \includegraphics{flow.png}
     \caption{Permitted flow of data}
+    \label{fig:flow}
 \end{figure}
 
 \subsection{Information Flow Security in Concurrency}
@@ -75,17 +81,26 @@ To overcome information flow security in non-blocking concurrent threads, Winter
 % I'd like to include a diagram here to show how the tool would be used
 
 \subsection{Compilers and Security}
+Compilers are well known to be a weak link between source code and the hardware executing it. Source code that has been verified to provide a security guarantee, potentially using formal techniques, may not hold those security guarantees when being executed. This is caused by compiler optimisations that may be technically correct, however, subvert the expectations a programmer may have about the execution of their program \cite{d2015correctness}. This problem is known as the \textit{correctness security gap}. One example of the correctness security gap is caused by an optimisation called dead store elimination. Figure \ref{fig:deadstore} was derived from CWE-14 \cite{cwe14} and CWE-733 \cite{cwe733} and used by D'Silva et al. \cite{d2015correctness}. Here a secret key was retrieved and stored in a local variable to perform some work. After completing the work, and to prevent sensitive data from flowing into untrusted sources, the key is wiped from memory by assigning it the value 0x0.
 
-- Compilers are a weak link between source code that has provided a security guarantee and the hardware executing security guarantees
-- Source code can be verified/proven for correctness, however, compiler optimisations can occur that break the guarantees verified in the source code - look at crypt example CWE-13 \&{} CWE-733
-- optimisations such as dead store elimination can be proved formally correct, however memory is left in a state that does not follow programmer's expectations and thus can violate security guarantees verified in source code
-- aka the Correctness Security Gap
-- To correctly analyse the correctness of information flow security policies, analysis must be conducted after compilation to a binary to detect compiler optimisations that violate these security policies.
-- Statically generated annotations as a solution
+\begin{figure}
+    \begin{lstlisting}
+crypt() {
+    key := 0xC0DE // Read key
+    ... // Work with the key
+    key := 0x0 // Clear memory
+}
+        \end{lstlisting}
+    \caption{Implicit flow of data to a public variable}
+    \label{fig:deadstore}
+\end{figure}
 
-Although one could analyse each individual compiler optimisation to check for potential security violations in source code, defensively programming against the compiler can be counter-initiative. Instead, the proposed tool looks to automate this process and provide the user with feedback on the security of their concurrent programs. 
+From the perspective of the source code, a programmer would expect the sensitive data from key to be scrubbed after exiting the function. However, key is a variable local to the function. As key is not read after exiting the function, the statement that assigns key to a value of 0x0 will be removed as part of dead store elimination. This results in lingering memory that could be exploited by an attacker. In GCC, with compiler optimisations on, dead store elimination is performed by default \cite{gccoptimise}. Additionally, dead store elimination has been proven to be functionally correct \cite{benton2004simple}\cite{leroy2006formal}.
+
+This leads to the question, \textit{what security guarantees in source code are being violated by compiler optimisations?} Although one could analyse each individual compiler optimisation to check for potential security violations in source code, defensively programming against the compiler can be counter-initiative. One might also suggest turning compiler optimisations off, however, this leads to slower code. In a concurrent system where execution time is critical, turning compiler optimisations off is not a viable option. Instead an alternative solution is to perform a static analysis on a binary for security violations. As compilation has already been executed, such analysis would reveal security guarantee violations that result due to compiler optimisations.
 
 \section{Similar Solutions}
+In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis
 - Safety-critical, real-time software such as flight control systems require worst-case execution time analysis to prove correctness.
 -  AbsInt analyses worst case execution time using static analysis tools alongside compiler annotations.
 - Using CompCert: Supports annotation via \_\_builtin\_annot() - places comment in generated assembly code. Additional tool can be used to parse comments and generate annotations
