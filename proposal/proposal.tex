@@ -22,7 +22,7 @@
 
 \textbf{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vestibulum ultricies euismod. Duis turpis augue, tempor eget ligula in, malesuada pulvinar mi. Maecenas elementum dolor diam, ut condimentum est dapibus ac. Morbi sed molestie ipsum, vel varius mi. Mauris quis ex sed massa efficitur varius. Curabitur elementum, odio at faucibus rutrum, velit erat ullamcorper mauris, non maximus magna orci a mi. Donec sed condimentum ipsum. Interdum et malesuada fames ac ante ipsum primis in faucibus.}
 
-\section{Background}
+\section{Topic Definition}
 TODO: Brief overview of the background of the topic
 
 - provide a tool to analyse C programs to detect security violations created through information flow control through wpif.
@@ -30,6 +30,9 @@ TODO: Brief overview of the background of the topic
 - Analysis done after compilation to a binary to detect information flow violations introduced by compiler optimisations
 
 - Explore ways to preserve annotations in C through compilation to binary with minimal modification to the compiler
+
+\section{Background}
+TODO: Introduction to background
 
 \subsection{Information Security}
 Vulnerabilities in software can lead to catastrophic consequences when manipulated by attackers. \textit{Example in here?}
@@ -97,32 +100,22 @@ crypt() {
 
 From the perspective of the source code, a programmer would expect the sensitive data from key to be scrubbed after exiting the function. However, key is a variable local to the function. As key is not read after exiting the function, the statement that assigns key to a value of 0x0 will be removed as part of dead store elimination. This results in lingering memory that could be exploited by an attacker. In GCC, with compiler optimisations on, dead store elimination is performed by default \cite{gccoptimise}. Additionally, dead store elimination has been proven to be functionally correct \cite{benton2004simple}\cite{leroy2006formal}.
 
+% TODO: Discuss what other compiler optimisations can cause the correctness security gap
+
 This leads to the question, \textit{what security guarantees in source code are being violated by compiler optimisations?} Although one could analyse each individual compiler optimisation to check for potential security violations in source code, defensively programming against the compiler can be counter-initiative. One might also suggest turning compiler optimisations off, however, this leads to slower code. In a concurrent system where execution time is critical, turning compiler optimisations off is not a viable option. Instead an alternative solution is to perform a static analysis on a binary for security violations. As compilation has already been executed, such analysis would reveal security guarantee violations that result due to compiler optimisations.
 
-\section{Similar Solutions}
-In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis
-- Safety-critical, real-time software such as flight control systems require worst-case execution time analysis to prove correctness.
--  AbsInt analyses worst case execution time using static analysis tools alongside compiler annotations.
-- Using CompCert: Supports annotation via \_\_builtin\_annot() - places comment in generated assembly code. Additional tool can be used to parse comments and generate annotations
-- Optimisations can remove annotations - need to verify annotations propagated through
-- Downfall: treatment as a call to an external function, cannot be placed at top-level of compilation unit unlike a var declaration.
+\subsection{Similar Solutions}
+In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis can be conducted using static analysis tools to estimate safe upper bounds. In the case of AbsInt's aiT tool this analysis is conducted alongside compiler annotations to assist where loop bounds cannot be computed statically. In these cases, the user can provide annotations to guide the analysis tools \cite{schommer2018embedded}. This tool builds on an existing annotation mechanism that exist in CompCert, a C compiler that has been formally verified for use in life-critical and mission-critical software \cite{compcert}. This approach is able to reliably transmit compiler annotations through to binary through method calls which are carried through compilation and the linked executable without using external annotation files. CompCert prints annotation strings as a comment in the generated assembly code, and an additional tool is used to parse these comments and generate annotations. However, due to its treatment as an external function, annotations cannot be placed at the top level of a compilation unit, unlike a variable declaration. Additionally, care needs to be taken to avoid compiler optimisations removing annotations or rendering annotations inapplicable after optimisation.
 
-- The ENTRA (Whole-Systems ENergy TRAnsparency) Deliverable describe mechanism to transfer properties from the source to the machine level.
-- Comments need to be extracted from assembler files, not stored in final binary
+A similar approach to CompCert is used by The ENTRA (Whole-Systems ENergy TRAnsparency). As part of providing a common assertion language, pragmas are used to propagate information through to comments in the assembler files. Information is retained in LLVM IR and ISA representations. However, these annotations are not stored in the final binary and thus comments must be extracted from assembler files \cite{eder2013common}. 
 
-- Li, Puat and Rohou present framework where source code annotations are transformed into annotations on the binary level
-- Focus on loop count annotations and preservation through classic loop optimisations
+% Li et al. 
+% - Li, Puat and Rohou present framework where source code annotations are transformed into annotations on the binary level
+% - Focus on loop count annotations and preservation through classic loop optimisations
 
+GCC plugins: https://gcc.gnu.org/wiki/plugins
 
-\subsection{TODO}
-Still a lot of goodness to discuss:
-\begin{enumerate}
-    \item the correctness security gap (compiler violations of security guarantees and why it is not the compiler's role to ensure security)
-    \item How compiler annotations can be used to assist analysis using WPIF
-    \item Existing solutions for compiler annotations
-    \item Discussion about modifying / not modifying compiler - approach
-    \item GCC plugins: https://gcc.gnu.org/wiki/plugins
-\end{enumerate}
+\section{Project Plan}
 
 % - WPIF
 
