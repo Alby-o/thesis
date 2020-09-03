@@ -1,8 +1,10 @@
+% !TeX root = ./proposal.tex
 \documentclass[twocolumn]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{biblatex}
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage{tabularx}
 \graphicspath{ {./images/} }
 \addbibresource{bibliography.bib}
 
@@ -16,20 +18,19 @@
 
 % TODO: Fix refs of security policy of vars vs. data
 
-
 \textbf{\textit{Abstract} - Information flow security in concurrency is difficult due to the increasing complexity introduced with multiple threads. Additionally, compiler optimisations can break security guarantees that have been verified in source code. In this paper, we propose a thesis to explore these issues through providing annotations in C source code that propagate through to the binary or assembly. These annotations could then be used to guide a static analysis of information flow security in concurrency. This approach involves (1) capturing C source code annotations provided by the user about the security policy of data and variables and (2) passing these annotations down to the binary where static analysis tools can be utilised to identify security vulnerabilities in the produced binary. }
 
 \section{Topic Definition}
-This paper describes the motivation, background knowledge and plan for the proposed thesis \textit{Compiler Annotation Solutions for Concurrent Information Flow Security}. 
+This paper describes the motivation, background knowledge and plan for the proposed thesis \textit{Compiler Annotation Solutions for Concurrent Information Flow Security}.
 
-There is a high degree of complexity in verifying security guarantees in concurrent programs \cite{TODO}. Additionally, aggressive compiler optimisations can modify the binary output in unexpected ways \cite{d2015correctness}. To preserve the security of a program, the flow of sensitive information must be protected to avoid flowing in to untrusted sources \cite{balliu2014logics}. This is where static analysis tools can be used to verify the integrity of security guarantees and the flow of sensitive information. In this thesis, we look to explore a solution to information flow security in concurrent programs through analysing the output after aggressive compiler optimisations. 
+There is a high degree of complexity in verifying security guarantees in concurrent programs \cite{TODO}. Additionally, aggressive compiler optimisations can modify the binary output in unexpected ways \cite{d2015correctness}. To preserve the security of a program, the flow of sensitive information must be protected to avoid flowing in to untrusted sources \cite{balliu2014logics}. This is where static analysis tools can be used to verify the integrity of security guarantees and the flow of sensitive information. In this thesis, we look to explore a solution to information flow security in concurrent programs through analysing the output after aggressive compiler optimisations.
 
-We propose a tool to analyse C programs to detect security violations in information flow control. This tool will preserve annotations provided by the programmer in source code through lowering passes and aggressive compiler optimisations. The tool will work alongside the \textit{Weakest Precondition for Information Flow} (wpif) transformer described by Winter et al. \cite{winter2020information} to allow the programmer to assess the security of information flow in their concurrent programs. 
+We propose a tool to analyse C programs to detect security violations in information flow control. This tool will preserve annotations provided by the programmer in source code through lowering passes and aggressive compiler optimisations. The tool will work alongside the \textit{Weakest Precondition for Information Flow} (wpif) transformer described by Winter et al. \cite{winter2020information} to allow the programmer to assess the security of information flow in their concurrent programs.
 
 Similar tools for propagating annotations and properties through compiler optimisations have been explored \cite{vu2020secure} \cite{schommer2018embedded} \cite{leroy2016compcert}, however, these tools focus on either generic solutions for propagating properties or to assist the static analysis of the \textit{Worst Case Execution Time}. We look to use these tools or similar approaches to maintain compiler annotations for analysis of information flow security in concurrent programs.
 
 \section{Background}
-Vulnerabilities in software can lead to catastrophic consequences when manipulated by attackers. In an open-source cryptographic software library (OpenSSL) used by an estimated two-thirds of web servers \cite{heartbleed} a security flaw called Heartbleed was discovered. Secure secrets such as financial data, encryption keys, or anything else stored in the server's memory could be leaked. Normally, one would send a Heartbeat request with a text string payload and the length of the payload. For example, a message of ``hello'' could be sent with the length of the message, 5. However, due to a improper input validation, known as buffer over-read, one could send a length longer that the string they actually sent. This would cause the server to respond with the original message and whatever else happened to be in the allocated memory, including any potentially sensitive information. An example of this is shown in figure \ref{fig:heartbleed} \cite{heartbleedimg}.
+Vulnerabilities in software can lead to catastrophic consequences when manipulated by attackers. In an open-source cryptographic software library (OpenSSL) used by an estimated two-thirds of web servers \cite{heartbleed} a security flaw called Heartbleed was discovered. Secure secrets such as financial data, encryption keys, or anything else stored in the server's memory could be leaked. Normally, one would send a Heartbeat request with a text string payload and the length of the payload. For example, a message of ``hello'' could be sent with the length of the message, 5. However, due to a improper input validation (buffer over-read), one could send a length longer that the string they actually sent. This would cause the server to respond with the original message and anything that was in the allocated memory at the time, including any potentially sensitive information. An example of this is shown in figure \ref{fig:heartbleed} \cite{heartbleedimg}.
 
 \begin{figure}
     \centering
@@ -62,7 +63,7 @@ if secret = 1
     \label{fig:implicit}
 \end{figure}
 
-Security concerns do not only exist at the application level. In a huge codebase such as an OS, different low-level bugs can be exploited to gain access to data, such as by using buffer overflows to inject viruses or trojans \cite{agten2012recent}. 
+Security concerns do not only exist at the application level. In a huge codebase such as an OS, different low-level bugs can be exploited to gain access to data, such as by using buffer overflows to inject viruses or trojans \cite{agten2012recent}.
 
 \subsection{Information Flow Control}
 As seen by the issues that can be introduced via implicit and explicit flow of data, there is room to improve on the existing techniques imposed by current security measures. To protect confidentiality, secure or sensitive information must be prevented from flowing into public on insecure variables. Additionally, to protect integrity, untrusted data from public sources must be prevented from flowing into secure or trusted destinations \cite{balliu2014logics}. An information flow security policy can be introduced to classify or label data, or more formally, a set of \textit{security levels} to which each object is bound by across a multi-level security lattice \cite{denning1976lattice}. In this thesis, we will focus primarily on preserving confidentiality.
@@ -102,55 +103,214 @@ From the perspective of the source code, a programmer would expect the sensitive
 This leads to the question, \textit{what security guarantees in source code are being violated by compiler optimisations?} Although one could analyse each individual compiler optimisation to check for potential security violations in source code, defensively programming against the compiler can be counter-initiative. Additionally, compilers are getting better at optimising away tricks programmers write to work against the compiler, and thus is not a future-proof solution \cite{simon2018you}. One might also suggest turning compiler optimisations off, however, this leads to slower code. In a concurrent system where execution time is critical, turning compiler optimisations off is not a viable option. Instead an alternative solution is to perform a static analysis on binary or assembly for security violations. As compilation has already been executed, such analysis would reveal security guarantee violations that result due to compiler optimisations.
 
 \subsection{Compilation Annotations}
-This project can take two routes; the proposed tool will be required to run an analysis on either binary or assembly. For either route, annotations used to guide a static security analysis will need to be provided by the user in the C programs they write. The tool will then be required to propagate these annotations down to compiled forms, i.e. binary or assembly. From here, a static analysis can be conducted as described by Winter et al. \cite{winter2020information}. Ideally these annotations can be propagated through with little to no modification of the C Compiler being used as to reduce complexity and increase modularity and reusability of such a a tool. However, it is unclear as to whether passing annotations down with no modification to the compiler is currently possible. In this thesis, this issue will be explored. 
+This project can take two routes; the proposed tool will be required to run an analysis on either binary or assembly. For either route, annotations used to guide a static security analysis will need to be provided by the user in the C programs they write. The tool will then be required to propagate these annotations down to compiled forms, i.e. binary or assembly. From here, a static analysis can be conducted as described by Winter et al. \cite{winter2020information}. Ideally these annotations can be propagated through with little to no modification of the C Compiler being used as to reduce complexity and increase modularity and reusability of such a a tool. However, it is unclear as to whether passing annotations down with no modification to the compiler is currently possible. In this thesis, this issue will be explored.
 
-Running a static analysis on a binary can be difficult due to the low level nature of a binary file. As such, to sufficiently perform such an analysis, the binary would be required to be decompiled to a higher-level form, such as an assembly file. From here a static analysis could be conducted. The alternative approach would be to perform the analysis directly on the compiled assembly output files rather than reducing these to binary. Currently, it is unclear as to what compiler optimisations are made when reducing an assembly file to binary, and will be explored further throughout the lifetime of this thesis. In GCC, "temporary" intermediate files can be stored using the flag \textit{save-temps} \cite{gccdevoptions}. These stored files can then be used for analysis. 
+Running a static analysis on a binary can be difficult due to the low level nature of a binary file. As such, to sufficiently perform such an analysis, the binary would be required to be decompiled to a higher-level form, such as an assembly file. From here a static analysis could be conducted. The alternative approach would be to perform the analysis directly on the compiled assembly output files rather than reducing these to binary. Currently, it is unclear as to what compiler optimisations are made when reducing an assembly file to binary, and will be explored further throughout the lifetime of this thesis. In GCC, ``temporary'' intermediate files can be stored using the flag \textit{save-temps} \cite{gccdevoptions}. These stored files can then be used for analysis.
 
 % TODO: Include figure of this problem
 
 % TODO: Symbol table.
 
 \subsection{Related Work}
-In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis can be conducted using static analysis tools to estimate safe upper bounds. In the case of AbsInt's aiT tool this analysis is conducted alongside compiler annotations to assist where loop bounds cannot be computed statically. In these cases, the user can provide annotations to guide the analysis tools \cite{schommer2018embedded}. This tool builds on an existing annotation mechanism that exist in CompCert, a C compiler that has been formally verified for use in life-critical and mission-critical software \cite{compcert}\cite{leroy2016compcert}. CompCert annotations are not limited to WCET analysis. A general mechanism for attaching free-form annotations that propagate through to assembly files can be achieved with CompCert. This approach is able to reliably transmit compiler annotations through to binary through method calls which are carried through compilation and the linked executable without using external annotation files. CompCert prints annotation strings as a comment in the generated assembly code, and an additional tool is used to parse these comments and generate annotations. However, due to its treatment as an external function, annotations cannot be placed at the top level of a compilation unit, unlike a variable declaration. Compiler optimisations can additionally cause further issues when trying to preserve annotations through compilation. If dead code is eliminated, annotations associated with that code can be lost as well. Extra care needs to be taken to avoid these optimisations destroying links between properties and the code they refer to during such transformations. 
+In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis can be conducted using static analysis tools to estimate safe upper bounds. In the case of AbsInt's aiT tool this analysis is conducted alongside compiler annotations to assist where loop bounds cannot be computed statically. In these cases, the user can provide annotations to guide the analysis tools \cite{schommer2018embedded}. This tool builds on an existing annotation mechanism that exist in CompCert, a C compiler that has been formally verified for use in life-critical and mission-critical software \cite{compcert}\cite{leroy2016compcert}. CompCert annotations are not limited to WCET analysis. A general mechanism for attaching free-form annotations that propagate through to assembly files can be achieved with CompCert. This approach is able to reliably transmit compiler annotations through to binary through method calls which are carried through compilation and the linked executable without using external annotation files. CompCert prints annotation strings as a comment in the generated assembly code, and an additional tool is used to parse these comments and generate annotations. However, due to its treatment as an external function, annotations cannot be placed at the top level of a compilation unit, unlike a variable declaration. Compiler optimisations can additionally cause further issues when trying to preserve annotations through compilation. If dead code is eliminated, annotations associated with that code can be lost as well. Extra care needs to be taken to avoid these optimisations destroying links between properties and the code they refer to during such transformations.
 
 A similar approach to CompCert is used by The ENTRA (Whole-Systems ENergy TRAnsparency). As part of providing a common assertion language, pragmas are used to propagate information through to comments in the assembler files. Information is retained in LLVM IR and ISA representations. However, these annotations are not stored in the final binary and thus comments must be extracted from assembler files \cite{eder2013common}.
 
-Vu et al. \cite{vu2020secure} explore capturing and propagating properties from the source code level though though lowering passes and intermediate representations. Their goal was to maintain these properties to binary through aggressive compiler optimisations. As compilers only care about functional correctness, they have no notion of the link between properties and the code it refers to. Thus, there is no way to constrain transformations to preserve this link or to update these properties after the transformation. As such, they approached the problem to create a generic solution, modifying a LLVM compiler with virtually no optimisation changes. This was done by creating a library in LLVM. The properties were stored in strings, and these strings were parsed to build a list of observed variables and memory location. A LLVM pass was inserted to store all these properties in metadata. After each optimisation pass, a verification pass was inserted to check the presence of metadata representing the properties, variables amd memory locations. If an optimisation pass had cased the verification to fail the programmer would then be notified, to which they could annotate differently or disable the optimisation. 
+Vu et al. \cite{vu2020secure} explore capturing and propagating properties from the source code level though though lowering passes and intermediate representations. Their goal was to maintain these properties to binary through aggressive compiler optimisations. As compilers only care about functional correctness, they have no notion of the link between properties and the code it refers to. Thus, there is no way to constrain transformations to preserve this link or to update these properties after the transformation. As such, they approached the problem to create a generic solution, modifying a LLVM compiler with virtually no optimisation changes. This was done by creating a library in LLVM. The properties were stored in strings, and these strings were parsed to build a list of observed variables and memory location. A LLVM pass was inserted to store all these properties in metadata. After each optimisation pass, a verification pass was inserted to check the presence of metadata representing the properties, variables amd memory locations. If an optimisation pass had cased the verification to fail the programmer would then be notified, to which they could annotate differently or disable the optimisation.
 
-Also worth mentioning are GCC plugins \cite{gccplugins}. Compiler plugins can be constructed to add new features to a compiler without modifying the compiler itself. Support for this is available from GCC 4.5.0 and onwards. 
+Also worth mentioning are GCC plugins \cite{gccplugins}. Compiler plugins can be constructed to add new features to a compiler without modifying the compiler itself. Support for this is available from GCC 4.5.0 and onwards.
 
+\clearpage
+\onecolumn
 \section{Project Plan}
+There are several key milestones associated with this project. These are:
+\begin{enumerate}
+    \item Investigation into existing C compiler annotation solutions and approaches,
+    \item Evaluation of approaches and techniques,
+    \item Development of tool, 
+    \item Testing for correctness and performance, and
+    \item Formalisation of results.
+\end{enumerate}
 
-Milestones:
+\subsection{Why not, Waterfall?}
+
+As with all software projects, the project specifications and the associated plan are likely to change throughout the course of the project. In this project, it is likely that roadblocks will be faced when assessing particular approaches which will result in having to go back and reassess from the investigation stage once again. As such, following a waterfall-style plan does not suit this type of project, and creating waterfall-style plan such as a Gantt chart will be avoided. Instead, approaches and techniques will be discussed rather than a rigid plan. 
+
+\subsection{Milestones and Phases}
+Here each milestone is discussed in further detail. Here we use `milestones' and `phases' interchangeably. An estimated time has been associated with each phase and subsections of each milestone.  An overview of this plan can be seen in Figure \ref{fig:plan}. At each stage of the plan, it is possible to return back to previous phase.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{plan.png}
+    \caption{Project Plan Overview}
+    \label{fig:plan}
+\end{figure}
+
+\subsubsection{Investigation Phase}
+\label{section:investigation}
+\textbf{\textit{Estimated time: 30 hours}}
+
+As part of the investigation phase, the compiler annotation tools that are currently in use will be explored. These are the:
 \begin{itemize}
-    \item Investigation into C Compiler annotation solutions and approaches
-    \begin{itemize}
-        \item Thesis Proposal
-        \item Literature Review
-        \item Source Code inspection of AbsInt's, ENTRA and Vu et al. tools
-        \item Workspace set up
-    \end{itemize}
-    \item Tool development
-    \item Testing \& Correctness evaluation of tool
-    \item Benchmarking and Performance Testing
+    \item AbsInt aiT tool \textit{Estimated time: 10 hours},
+    \item CompCert annotations \textit{Estimated time: 10 hours}, and
+    \item Vu et al. LLVM compiler properties \textit{Estimated time: 10 hours}.
 \end{itemize}
 
+For each of these, the source code will be inspected and experimented with to understand the methodology and assess the applicability to wpif analysis. If new approaches or tools are discovered throughout the progress of this thesis this phase will need to be returned to.\\
+
+The resources required for this phase include:
+\begin{itemize}
+    \item books,
+    \item UQ library,
+    \item Google Scholar,
+    \item computer,
+    \item internet, and
+    \item code inspection tools (VS Code).
+\end{itemize}
+
+\subsubsection{Evaluation Phase}
+\textbf{\textit{Estimated time: 10 hours}}
+
+This phase is expected to be revisited several times over the course of the project. In this phase each option will be evaluated before beginning development. Different aspects of the development approach will need to be evaluated in this stage. This includes the evaluation of: assembly or binary approaches:
+
+\begin{itemize}
+    \item an assembly or binary approach,
+    \item standalone or existing tool approach. 
+\end{itemize}
+
+The existing tool approaches are listed in section \ref{section:investigation}. A standale tool could be devleoped using GCC plugins or some other method.\\
+
+The resources required for this phase include:
+\begin{itemize}
+    \item books,
+    \item UQ library,
+    \item Google Scholar,
+    \item computer, and
+    \item internet.
+\end{itemize}
+
+\subsubsection{Development Phase}
+\textbf{\textit{Estimated time: 100 hours}}
+
+In this phase, the proposed tool will be developed from a home workstation. 
+The specifics of what needs to be completed in this phase depends heavily on what approach is being used. As mentioned previously, if a roadblock is met, a revaluation will need to be made to reassess the approach being used. \\
+
+The resources required for this phase include:
+\begin{itemize}
+    \item a computer,
+    \item internet, and
+    \item code development tools (VS Code, Command line).
+\end{itemize}
+
+\subsubsection{Testing Phase}
+\textbf{\textit{Estimated time: 30 hours}}
+
+In this phase, the developed tool will be tested for correctness as well as performance and efficiency. These results will then be documented before returning to the development phase to fix bugs or issues with the tool. The development and testing phase will be revisited several times throughout the course of this thesis. \\
+
+The resources required for this phase include:
+\begin{itemize}
+    \item a computer,
+    \item internet, and
+    \item code development tools (VS Code, Command line).
+\end{itemize}
+
+\subsubsection{Formalisation}
+\textbf{\textit{Estimated time: 30 hours}}
+
+The formalisation of the thesis results will be done after development and testing of the tool. In this stage, the thesis content and report will be written and the poster produced. \\
+
+The resources required for this phase include:
+\begin{itemize}
+    \item books,
+    \item UQ library,
+    \item Google Scholar,
+    \item computer,
+    \item internet, and
+    \item code inspection tools (VS Code).
+\end{itemize}
+
+% Evaluating existing approaches in the context of wpif
+% Analysing the Assembly -> Binary compilation step
+% Explore GCC functionality and plugins
+% Explore standalone tool
+% Feedback results
+% Possibility of modifying source code
+
 \section{Risk Assessment}
-This project will be conducted primarily using a home workstation. Risk low.
-% - WPIF
+Risks associated with this thesis have been listed in table \ref{table:risk}. Each risk has an associated level of low, moderate, high or catastrophic. A description of each risk level has been listed in table \ref{table:risklevel}. Additionally, a likelihood rating of each risk has been assigned. These likelihood ratings have been listed in table \ref{table:likelihood}.
 
-% - Language-based security
-%     - Java language-based security
-%     - Annotations as a solution
+\subsection{Occupational Health and Safety Risk Assessment}
+This thesis will be conducted from a home workstation. This environment is a \textit{low risk laboratory} and as such, work is covered by general OHS laboratory rules.
 
-% - Avoid modifying Compiler
-%     - reduce complexity
-%     - avoid updating tool for each compiler update
-%     - potential for reusability for other languages / compilers
+\clearpage
+\begin{table}
+    \begin{center}
+        \begin{tabularx}{\linewidth} { 
+            | >{\hsize=.7\hsize\linewidth=\hsize}X 
+            | >{\hsize=1.3\hsize\linewidth=\hsize}X  | }
+            \hline
+            \textbf{Level} & \textbf{Description} \\
+            \hline
+            Low & Minimal disruption to work. Loss of maximum one day to a week of thesis-related work or a setback of similar duration. \\
+            \hline
+            Moderate & Moderate disruption to work. Loss of a week to a month of thesis-related work or a setback of similar duration. \\
+            \hline
+            High & Major disruption to work. Loss of a month or more of thesis-related work or a setback of similar duration. \\
+            \hline
+            Catastrophic & Loss of life, criminal charges or inability to complete thesis. \\
+            \hline
+        \end{tabularx}
+    \end{center}
+    \caption{Risk level descriptions}
+    \label{table:risklevel}
+\end{table}
 
-% - Mandatory Access control See: Language-Based Information-Flow Security Andrei Sabelfeld and Andrew C. Myers
+\begin{table}
+    \begin{center}
+        \begin{tabularx}{\linewidth} { 
+            | >{\hsize=.6\hsize\linewidth=\hsize}X 
+            | >{\hsize=1.4\hsize\linewidth=\hsize}X  | }
+            \hline
+            \textbf{Likelihood} & \textbf{Description} \\
+            \hline
+            Improbable & Hazard is unlikely to occur during the life of the project. \\
+            \hline
+            Possible & Hazard is likely to occur once during the lifetime of this project. \\
+            \hline
+            Likely & Hazard is likely to occur once in 3 months. \\
+            \hline
+            Extremely Likely & Hazard is likely to occur once in a month. \\
+            \hline
+        \end{tabularx}
+    \end{center}
+    \caption{Risk likelihood descriptions}
+    \label{table:likelihood}
+\end{table}
 
+\begin{table}
+    \begin{center}
+        \begin{tabularx}{\linewidth} { 
+            | >{\hsize=.3\hsize\linewidth=\hsize}X 
+            | >{\hsize=.3\hsize\linewidth=\hsize}X 
+            | >{\hsize=.3\hsize\linewidth=\hsize}X 
+            | >{\hsize=1.1\hsize\linewidth=\hsize}X  | }
+            \hline
+            \textbf{Risk} & \textbf{Level} & \textbf{Likelihood} & \textbf{Mitigation Plan} \\
+            \hline
+            Loss of data & Moderate & Possible & Data will be constantly backed up through the use of GitHub and Google Drive. Code and LaTeX documents will be backed up to GitHub with regular commits, with all other documents stored on Google Drive.\\ \hline
+            Hardware damage & Moderate & Improbable & Keep food, water and other hazardous materials away from the workstation. Maintain a backup PC in case of damage to the main computer.\\ \hline
+            Pandemic-related lockdown & Low & Likely & Plans will be put in place to prepare a home PC for external work in case the UQ St Lucia campus is unavailable due to COVID-19. Meetings can be conducted online over Zoom if required.\\ \hline
+            Out of scope work & Moderate & Possible & Maintain regular, weekly meetings with thesis supervisors to maintain scope of work conducted.\\ \hline
+            Illness preventing thesis work & Moderate & Possible & Maintain regular work progression of a minimal 10 hours per week such that if illness does occur, thesis work is not set back far.\\ \hline
+        \end{tabularx}
+    \end{center}
+    \caption{Risk likelihood descriptions}
+    \label{table:risk}
+\end{table}
+
+\clearpage
+\twocolumn
 \printbibliography
 
 \end{document}
-
