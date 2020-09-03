@@ -117,7 +117,7 @@ A similar approach to CompCert is used by The ENTRA (Whole-Systems ENergy TRAnsp
 
 Vu et al. \cite{vu2020secure} explore capturing and propagating properties from the source code level though though lowering passes and intermediate representations. Their goal was to maintain these properties to binary through aggressive compiler optimisations. As compilers only care about functional correctness, they have no notion of the link between properties and the code it refers to. Thus, there is no way to constrain transformations to preserve this link or to update these properties after the transformation. As such, they approached the problem to create a generic solution, modifying a LLVM compiler with virtually no optimisation changes. This was done by creating a library in LLVM. The properties were stored in strings, and these strings were parsed to build a list of observed variables and memory location. A LLVM pass was inserted to store all these properties in metadata. After each optimisation pass, a verification pass was inserted to check the presence of metadata representing the properties, variables amd memory locations. If an optimisation pass had cased the verification to fail the programmer would then be notified, to which they could annotate differently or disable the optimisation. 
 
-% GCC plugins: https://gcc.gnu.org/wiki/plugins
+Also worth mentioning are GCC plugins \cite{gccplugins}. Compiler plugins can be constructed to add new features to a compiler without modifying the compiler itself. Support for this is available from GCC 4.5.0 and onwards. 
 
 \section{Project Plan}
 
