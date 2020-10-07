@@ -144,20 +144,16 @@ struct user_t *setup_users(void)
   user_admin = malloc(sizeof(struct user_t));
   strcpy(((*user_admin)).name, __stringlit_1);
   strcpy(((*user_admin)).password, __stringlit_2);
-  __builtin_annot("# file:password-annotation.c line:20 function:setup_users\n%here L(%e1) = high",
+  __builtin_annot("# file:password-optimise.c line:20 function:setup_users\n%here L(%e1) = high",
                   ((*user_admin)).password);
   ((*user_admin)).balance = 1000000;
   user_alice = malloc(sizeof(struct user_t));
   strcpy(((*user_alice)).name, __stringlit_3);
   strcpy(((*user_alice)).password, __stringlit_4);
-  __builtin_annot("# file:password-annotation.c line:26 function:setup_users\n%here L(%e1) = high",
-                  ((*user_alice)).password);
   ((*user_alice)).balance = 783;
   user_abdul = malloc(sizeof(struct user_t));
   strcpy(((*user_abdul)).name, __stringlit_5);
   strcpy(((*user_abdul)).password, __stringlit_6);
-  __builtin_annot("# file:password-annotation.c line:32 function:setup_users\n%here L(%e1) = high",
-                  ((*user_abdul)).password);
   ((*user_abdul)).balance = 2;
   ((*user_admin)).next = user_alice;
   ((*user_alice)).next = user_abdul;

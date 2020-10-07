@@ -23,11 +23,13 @@ user_t* setup_users() {
     user_t* user_alice = malloc(sizeof(user_t));
     strcpy(user_alice->name, "alice");
     strcpy(user_alice->password, "!alice12!_veuje@@hak");
+    __builtin_ais_annot("%here L(%e1) = high", user_alice->password);
     user_alice->balance = 783;
 
     user_t* user_abdul = malloc(sizeof(user_t));
     strcpy(user_abdul->name, "abdul");
     strcpy(user_abdul->password, "passw0rd123");
+    __builtin_ais_annot("%here L(%e1) = high", user_abdul->password);
     user_abdul->balance = 2;
 
     user_admin->next = user_alice;
