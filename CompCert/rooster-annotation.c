@@ -4,7 +4,7 @@ int drake;
 int goose;
 
 int fun(int a, int b, int c) {
-    //CRITICAL COMMENT
+    __builtin_ais_annot("%here CRITICAL COMMENT");
     static int count = 0;
     int sum = a + b + c;
     if (sum < 0) {
@@ -24,7 +24,8 @@ int fun(int a, int b, int c) {
 }
 
 int main(void) {
-    //EXCEPTIONAL
+    __builtin_ais_annot("%here L(%e1) = high", goose);
+    __builtin_ais_annot("%here EXCEPTIONAL");
     rooster = 1;
     drake = 5;
     goose = 10;int result;
