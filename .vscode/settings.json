@@ -11,5 +11,7 @@
         "plugins",
         "reusability",
         "wpif"
-    ]
+    ],
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }

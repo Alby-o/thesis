@@ -25,3 +25,4 @@
 *.bcf
 *.run.xml
 *.fls
+__pycache__
