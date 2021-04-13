@@ -21,20 +21,20 @@ user_t* setup_users() {
     // error: impossible constraint in asm: can't store value into a register
     // asm("# L(%0) = high" : "=r"(user_admin->password));
     
-    asm("# L(%0) = high" : "=r"(user_admin));
+    asm("# L(%0) = high" : : "m"(user_admin->password));
     user_admin->balance = 1000000;
 
     user_t* user_alice = malloc(sizeof(user_t));
     strcpy(user_alice->name, "alice");
     strcpy(user_alice->password, "!alice12!_veuje@@hak");
     user_alice->balance = 783;
-    asm("# L(%0) = high" : "=r"(user_alice));
+    // asm("# L(%0) = high" : "=r"(user_alice));
 
     user_t* user_abdul = malloc(sizeof(user_t));
     strcpy(user_abdul->name, "abdul");
     strcpy(user_abdul->password, "passw0rd123");
     user_abdul->balance = 2;
-    asm("# L(%0) = high" : "=r"(user_abdul));
+    // asm("# L(%0) = high" : "=r"(user_abdul));
 
     user_admin->next = user_alice;
     user_alice->next = user_abdul;

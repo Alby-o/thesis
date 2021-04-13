@@ -6,45 +6,73 @@
 fun:                                    # @fun
 	.cfi_startproc
 # %bb.0:
-                                        # kill: def $edx killed $edx def $rdx
-                                        # kill: def $esi killed $esi def $rsi
-                                        # kill: def $edi killed $edi def $rdi
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register %rbp
+	movl	%edi, -8(%rbp)
+	movl	%esi, -12(%rbp)
+	movl	%edx, -16(%rbp)
 	#APP
 	# CRITICAL COMMENT
 	#NO_APP
-	leal	(%rsi,%rdi), %eax
-	addl	%edx, %eax
-	js	.LBB0_9
+	movl	-8(%rbp), %eax
+	addl	-12(%rbp), %eax
+	addl	-16(%rbp), %eax
+	movl	%eax, -20(%rbp)
+	cmpl	$0, -20(%rbp)
+	jge	.LBB0_2
 # %bb.1:
-	movl	fun.count(%rip), %eax
-	cmpl	%esi, %edi
-	jge	.LBB0_9
-# %bb.2:
-	cmpl	%edx, %esi
-	jge	.LBB0_9
+	movl	-20(%rbp), %eax
+	movl	%eax, -4(%rbp)
+	jmp	.LBB0_12
+.LBB0_2:
+	movl	-8(%rbp), %eax
+	cmpl	-12(%rbp), %eax
+	jge	.LBB0_11
 # %bb.3:
-	leal	1(%rdi), %ecx
-	cmpl	%esi, %ecx
-	jne	.LBB0_5
+	movl	-12(%rbp), %eax
+	cmpl	-16(%rbp), %eax
+	jge	.LBB0_11
 # %bb.4:
-	subl	%esi, %eax
-	addl	%edx, %eax
+	jmp	.LBB0_5
+.LBB0_5:                                # =>This Loop Header: Depth=1
+                                        #     Child Loop BB0_7 Depth 2
+	movl	-8(%rbp), %eax
+	cmpl	-12(%rbp), %eax
+	je	.LBB0_10
+# %bb.6:                                #   in Loop: Header=BB0_5 Depth=1
+	movl	-8(%rbp), %eax
 	addl	$1, %eax
-	jmp	.LBB0_8
-.LBB0_5:
-	addl	$-1, %esi
-	.p2align	4, 0x90
-.LBB0_6:                                # =>This Inner Loop Header: Depth=1
-	addl	$-1, %esi
-	cmpl	%esi, %edi
-	jne	.LBB0_6
-# %bb.7:
-	addl	%edx, %eax
-	subl	%esi, %eax
-.LBB0_8:
-	movl	%eax, fun.count(%rip)
-.LBB0_9:
-                                        # kill: def $eax killed $eax killed $rax
+	movl	%eax, -8(%rbp)
+	movl	fun.count, %eax
+	addl	$1, %eax
+	movl	%eax, fun.count
+.LBB0_7:                                #   Parent Loop BB0_5 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	movl	-12(%rbp), %eax
+	cmpl	-16(%rbp), %eax
+	je	.LBB0_9
+# %bb.8:                                #   in Loop: Header=BB0_7 Depth=2
+	movl	-16(%rbp), %eax
+	addl	$-1, %eax
+	movl	%eax, -16(%rbp)
+	movl	fun.count, %eax
+	addl	$1, %eax
+	movl	%eax, fun.count
+	jmp	.LBB0_7
+.LBB0_9:                                #   in Loop: Header=BB0_5 Depth=1
+	jmp	.LBB0_5
+.LBB0_10:
+	jmp	.LBB0_11
+.LBB0_11:
+	movl	fun.count, %eax
+	movl	%eax, -4(%rbp)
+.LBB0_12:
+	movl	-4(%rbp), %eax
+	popq	%rbp
+	.cfi_def_cfa %rsp, 8
 	retq
 .Lfunc_end0:
 	.size	fun, .Lfunc_end0-fun
@@ -56,21 +84,32 @@ fun:                                    # @fun
 main:                                   # @main
 	.cfi_startproc
 # %bb.0:
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register %rbp
+	subq	$16, %rsp
+	movl	$0, -4(%rbp)
 	#APP
-	# L(%eax) = high
+	# L(goose(%rip)) = high
 	#NO_APP
-	movl	%eax, goose(%rip)
 	#APP
 	# EXCEPTIONAL
 	#NO_APP
-	movl	$1, rooster(%rip)
-	movl	$5, drake(%rip)
-	movl	$10, goose(%rip)
-	#APP
-	# CRITICAL COMMENT
-	#NO_APP
-	addl	$9, fun.count(%rip)
-	xorl	%eax, %eax
+	movl	$1, rooster
+	movl	$5, drake
+	movl	$10, goose
+	movl	rooster, %edi
+	movl	drake, %esi
+	movl	goose, %edx
+	callq	fun
+	xorl	%ecx, %ecx
+	movl	%eax, -8(%rbp)
+	movl	%ecx, %eax
+	addq	$16, %rsp
+	popq	%rbp
+	.cfi_def_cfa %rsp, 8
 	retq
 .Lfunc_end1:
 	.size	main, .Lfunc_end1-main
@@ -88,3 +127,8 @@ main:                                   # @main
 	.ident	"clang version 10.0.0-4ubuntu1 "
 	.section	".note.GNU-stack","",@progbits
 	.addrsig
+	.addrsig_sym fun
+	.addrsig_sym fun.count
+	.addrsig_sym goose
+	.addrsig_sym rooster
+	.addrsig_sym drake

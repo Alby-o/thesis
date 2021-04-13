@@ -24,7 +24,7 @@ int fun(int a, int b, int c) {
 }
 
 int main(void) {
-    asm("# L(%0) = high" : "=r"(goose));
+    asm("# L(%0) = high" : : "m"(goose));
     asm("# EXCEPTIONAL");
     rooster = 1;
     drake = 5;

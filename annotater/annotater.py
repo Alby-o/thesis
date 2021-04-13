@@ -7,7 +7,11 @@ parser.add_argument('--optimisation', default=0, choices=[0, 1, 2, 3], type=int,
 
 def main(args):
     assembly = compile_source(args.filename, args.optimisation)
-    print(assembly.data)
+    
+    for line in assembly.raw:
+        print(line)
+    for line in assembly.data:
+        print(line)
 
 if __name__ == "__main__":
     args = parser.parse_args()
