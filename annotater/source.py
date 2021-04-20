@@ -1,20 +1,20 @@
-import uuid
 import subprocess
-import os
 import shutil
-import tempfile
 from assembly import Assembly
 from error import compile_error
+from temp import temp_file_name
+from wpif import Wpif
 
 class Source:
     def __init__(self, filename):
         self.filename = filename
+        self.data = None
         
     def compile(self, optimisation):
         """
         Compile this source file in it's current form
         """
-        output: str = uuid.uuid4().hex + ".s"
+        output: str = temp_file_name("s")
 
         try:
             compile = subprocess.Popen(['clang', self.filename, '-S', '-O' + str(optimisation), '-o', output], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -24,14 +24,32 @@ class Source:
         stdout, stderr = compile.communicate()
         if (stderr):
             compile_error(stderr)
-
-        assembly = Assembly.fromfilename(output)
-        os.remove(output)
+        
+        try:
+            assembly = Assembly.fromfilename(output)
+        except FileNotFoundError:
+            compile_error("Assembly file could not be found after compiling")
         return assembly
 
     def clone(self):
         """
-        Clone this source file and return a new file location
+        Clone this source file and return a new Source object
         """
-        self.copy_filename = "temp/" + uuid.uuid4().hex + ".c"
-        shutil.copyfile(self.filename, self.copy_filename)
+        copy_filename = temp_file_name()
+        copy = shutil.copy(self.filename, copy_filename)
+        print(copy)
+
+        return Source(copy_filename)
+
+    def transpile(self):
+        file = open(self.filename, 'r')
+        self.data = file.readlines()
+        self.wpif_lines = []
+        wpif_identifier = "wpif: "
+        for line in self.data:
+            if wpif_identifier in line:
+                wpif = Wpif(line.split(wpif_identifier)[1], 0)
+                print(wpif)
+                self.wpif_lines.append(wpif)
+        file.close()
+        

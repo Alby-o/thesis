@@ -11,8 +11,5 @@ class Assembly:
         
     @classmethod
     def fromfilename(cls, filename):
-        try:
-            data = open(filename, 'r').readlines()    
-            return cls(data)
-        except FileNotFoundError:
-            compile_error("Assembly file could not be found after compiling")
+        data = open(filename, 'r').readlines()    
+        return cls(data)
