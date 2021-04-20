@@ -26,3 +26,4 @@
 *.run.xml
 *.fls
 __pycache__
+temp

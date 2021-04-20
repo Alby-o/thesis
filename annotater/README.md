@@ -8,8 +8,8 @@ We want to be able to pass through annotations without having to modify the comp
 
 ## To-Do
 
-- [ ] open file
-- [ ] compile file as-is
+- [x] open file
+- [x] compile file as-is
 - [ ] parse file for annotations
 - [ ] insert inline assembly where needed
 - [ ] recompile / compare outputs
