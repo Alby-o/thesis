@@ -11,7 +11,9 @@
             "program": "annotater/annotater.py",
             "console": "integratedTerminal",
             "args": [
-                "annotater/test.c"
+                "annotater/test.c", 
+                "--optimisation=3",
+                "--output=yee.s"
             ]
         }
     ]

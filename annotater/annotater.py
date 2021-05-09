@@ -1,10 +1,12 @@
 import argparse
 import difflib
+import os
 from source import Source
 from temp import temp_file_name, create_temp_folder, cleanup_temp_folder
 
 parser = argparse.ArgumentParser(description="build a assembly output with annotations")
 parser.add_argument('filename', help='The file to compile')
+parser.add_argument('--output', default='out.s', help='Annotated output')
 parser.add_argument('--optimisation', default=0, choices=[0, 1, 2, 3], type=int, help='optimisiation level')
 
 def main(args):
@@ -17,9 +19,11 @@ def main(args):
     assembly = source.compile(args.optimisation)
     # Transpile & insert inline assembly
     source.transpile()
-    assemblyAnnotated = source.compile(args.optimisation, output="out.s")
+    assemblyAnnotated = source.compile(args.optimisation, output=args.output)
     if (assembly.data != assemblyAnnotated.data):
-        print("Warning: There was a difference in the compiled outputs when annotated.")
+        print(os.linesep + "Warning: There was a difference in the compiled outputs when annotated." + os.linesep)
+    else:
+        print(args.output)
     for line in difflib.unified_diff(assembly.data, assemblyAnnotated.data, fromfile='assembly', tofile='annotated', lineterm=''):
         print(line)
 

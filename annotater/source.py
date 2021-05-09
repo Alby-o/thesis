@@ -35,7 +35,7 @@ class Source:
         Clone this source file and return a new Source object
         """
         copy_filename = temp_file_name()
-        copy = shutil.copy(self.filename, copy_filename)
+        shutil.copy(self.filename, copy_filename)
 
         return Source(copy_filename)
 
