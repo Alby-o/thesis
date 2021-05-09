@@ -10,11 +10,10 @@ class Source:
         self.filename = filename
         self.data = None
         
-    def compile(self, optimisation):
+    def compile(self, optimisation, output = temp_file_name("s")):
         """
         Compile this source file in it's current form
         """
-        output = temp_file_name("s")
 
         try:
             compile = subprocess.Popen(['clang', self.filename, '-S', '-O' + str(optimisation), '-o', output], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -37,7 +36,6 @@ class Source:
         """
         copy_filename = temp_file_name()
         copy = shutil.copy(self.filename, copy_filename)
-        print(copy)
 
         return Source(copy_filename)
 

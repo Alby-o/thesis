@@ -17,8 +17,10 @@ def main(args):
     assembly = source.compile(args.optimisation)
     # Transpile & insert inline assembly
     source.transpile()
-    assemblyTranspiled = source.compile(args.optimisation)
-    for line in difflib.unified_diff(assembly.data, assemblyTranspiled.data, fromfile='assembly', tofile='transpiled', lineterm=''):
+    assemblyAnnotated = source.compile(args.optimisation, output="out.s")
+    if (assembly.data != assemblyAnnotated.data):
+        print("Warning: There was a difference in the compiled outputs when annotated.")
+    for line in difflib.unified_diff(assembly.data, assemblyAnnotated.data, fromfile='assembly', tofile='annotated', lineterm=''):
         print(line)
 
 if __name__ == "__main__":

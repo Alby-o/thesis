@@ -27,3 +27,4 @@
 *.fls
 __pycache__
 temp
+out.s

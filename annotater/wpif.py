@@ -23,7 +23,6 @@ class Wpif:
         
         # Replace var names in line
         result = self.construct_asm(vars, varNames)
-        print(result)
         
         return result
 
