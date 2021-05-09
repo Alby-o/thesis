@@ -1,6 +1,7 @@
 import argparse
+import difflib
 from source import Source
-from temp import *
+from temp import temp_file_name, create_temp_folder, cleanup_temp_folder
 
 parser = argparse.ArgumentParser(description="build a assembly output with annotations")
 parser.add_argument('filename', help='The file to compile')
@@ -16,6 +17,9 @@ def main(args):
     assembly = source.compile(args.optimisation)
     # Transpile & insert inline assembly
     source.transpile()
+    assemblyTranspiled = source.compile(args.optimisation)
+    for line in difflib.unified_diff(assembly.data, assemblyTranspiled.data, fromfile='assembly', tofile='transpiled', lineterm=''):
+        print(line)
 
 if __name__ == "__main__":
     args = parser.parse_args()

@@ -2,7 +2,8 @@
 
 int main()
 {
-    // wpif: L(var(i)) = High
     int i = 0;
+    // wpif: L(var(i)) = High
+    // : L(var(alby)) = Low
     return i + 1;
 }

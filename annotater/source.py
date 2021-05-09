@@ -14,7 +14,7 @@ class Source:
         """
         Compile this source file in it's current form
         """
-        output: str = temp_file_name("s")
+        output = temp_file_name("s")
 
         try:
             compile = subprocess.Popen(['clang', self.filename, '-S', '-O' + str(optimisation), '-o', output], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -44,12 +44,14 @@ class Source:
     def transpile(self):
         file = open(self.filename, 'r')
         self.data = file.readlines()
-        self.wpif_lines = []
         wpif_identifier = "wpif: "
-        for line in self.data:
+        for i, line in enumerate(self.data):
             if wpif_identifier in line:
                 wpif = Wpif(line.split(wpif_identifier)[1], 0)
-                print(wpif)
-                self.wpif_lines.append(wpif)
+                result = wpif.transform()
+                self.data[i] = result
+        file.close()
+        file = open(self.filename, 'w')
+        file.writelines(self.data)
         file.close()
         
