@@ -5,16 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: Annotater",
             "type": "python",
             "request": "launch",
             "program": "annotater/annotater.py",
             "console": "integratedTerminal",
             "args": [
-                "source/pread.c", 
+                "annotater/source/pread.c", 
                 "--optimisation=3",
-                "--output=output/pread.s"
+                "--output=annotater/output/pread.s"
             ]
+        },
+        {
+            "name": "Compile all",
+            "type": "python",
+            "request": "launch",
+            "program": "annotator/program-runner.py",
+            "console": "integratedTerminal"
         }
     ]
 }
