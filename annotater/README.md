@@ -10,6 +10,6 @@ We want to be able to pass through annotations without having to modify the comp
 
 - [x] open file
 - [x] compile file as-is
-- [ ] parse file for annotations
-- [ ] insert inline assembly where needed
-- [ ] recompile / compare outputs
+- [x] parse file for annotations
+- [x] insert inline assembly where needed
+- [x] recompile / compare outputs
