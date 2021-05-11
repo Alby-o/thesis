@@ -17,6 +17,7 @@ def main(args):
     source = source.clone()
     # Compile as-is to see output with optimisation
     assembly = source.compile(args.optimisation)
+    
     # Transpile & insert inline assembly
     source.transpile()
     assemblyAnnotated = source.compile(args.optimisation, output=args.output)

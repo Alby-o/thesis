@@ -3,6 +3,7 @@ import os
 
 class Wpif:
     var_regex = r'var\(.*?\)'
+    escape_chars = ['%', '|', '{', '}']
 
     def __init__(self, line, line_number):
         self.line = line.strip()
@@ -27,11 +28,17 @@ class Wpif:
         return result
 
     def construct_asm(self, vars, varNames):
-        # 1. Replace instances of var(x) with %num, 
-        # asm("# L(%0) = high" : : "X"(i));
+        # Replace instances of var(x) with %num, 
+        # Construst asm statement
         
         comment = self.line
         inputOperands = ""
+        
+        # Escape special characters
+        for char in Wpif.escape_chars:
+            comment = comment.replace(char, "%" + char)
+        comment = comment.replace('\\', '\\\\')
+            
         for i, var in enumerate(vars):
             comment = comment.replace(var, f"%{i}", 1)
             varName = varNames[var]
@@ -39,7 +46,7 @@ class Wpif:
                 inputOperands += ", "
             inputOperands += f'"X"({varName})'
 
-        return f'asm("# {comment}" : : {inputOperands});{os.linesep}'
+        return f'asm("# WPIF: {comment}" : : {inputOperands});{os.linesep}'
 
     def __str__(self):
         return str(self.line_number) + ": " + self.line
