@@ -12,14 +12,14 @@ parser.add_argument('--optimisation', default=0, choices=[0, 1, 2, 3], type=int,
 def main(args):
     run(args.filename, args.output, args.optimisation)
 
-def run(filename, output, optimisation):
+def run(filename, output, optimisation, unannotatedOuptut = temp_file_name("s")):
     create_temp_folder()
     source = Source(filename)
 
     # Clone our source to begin with so we do not modify the original file
     source = source.clone()
     # Compile as-is to see output with optimisation
-    assembly = source.compile(optimisation)
+    assembly = source.compile(optimisation, output=unannotatedOuptut)
     
     # Transpile & insert inline assembly
     source.transpile()
