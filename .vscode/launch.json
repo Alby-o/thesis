@@ -20,7 +20,7 @@
             "name": "Compile all",
             "type": "python",
             "request": "launch",
-            "program": "annotator/program-runner.py",
+            "program": "annotater/program-runner.py",
             "console": "integratedTerminal"
         }
     ]
