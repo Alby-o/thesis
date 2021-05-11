@@ -1,7 +1,7 @@
 import subprocess
 import shutil
 from assembly import Assembly
-from error import compile_error
+from error import compile_error, copy_error
 from temp import temp_file_name
 from wpif import Wpif
 
@@ -35,8 +35,10 @@ class Source:
         Clone this source file and return a new Source object
         """
         copy_filename = temp_file_name()
-        shutil.copy(self.filename, copy_filename)
-
+        try:
+            shutil.copy(self.filename, copy_filename)
+        except:
+            copy_error(self.filename)
         return Source(copy_filename)
 
     def transpile(self):
