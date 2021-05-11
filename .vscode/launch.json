@@ -13,7 +13,7 @@
             "args": [
                 "annotater/source/pread.c", 
                 "--optimisation=3",
-                "--output=annotater/output/pread.s"
+                "--output=annotater/out/pread.s"
             ]
         },
         {
