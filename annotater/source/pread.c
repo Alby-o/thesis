@@ -9,6 +9,7 @@ volatile int x;         //            {L(x)=z % 2 == 0}
 int main() {
     // wpif: L(var(z)) = true
     // wpif: L(var(x)) = var(z) % 2 == 0
+    // wpif: var(x) < var(x)'
     int r1 = 0;
     int r2 = 0;          //            {L(r2)=False} 
     // wpif: _P_0: var(r1) % 2 == 0
