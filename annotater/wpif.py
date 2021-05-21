@@ -4,6 +4,7 @@ import os
 class Wpif:
     var_regex = r'var\(.*?\)'
     escape_chars = ['%', '|', '{', '}']
+    constraints = "X"
 
     def __init__(self, line, line_number):
         self.line = line.strip()
@@ -44,7 +45,7 @@ class Wpif:
             varName = varNames[var]
             if len(inputOperands) > 0:
                 inputOperands += ", "
-            inputOperands += f'"X"({varName})'
+            inputOperands += f'"{Wpif.constraints}"({varName})'
 
         return f'asm("# WPIF: {comment}" : : {inputOperands});{os.linesep}'
 

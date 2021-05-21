@@ -18,7 +18,9 @@
             "program": "annotater.py",
             "console": "integratedTerminal",
             "args": [
-                "source/rooster.c"
+                "source/deadStoreElimination.c",
+                "--optimisation=0",
+                
             ]
         }
     ]
