@@ -1,6 +1,6 @@
 from temp import cleanup_temp_folder
 
-def compile_error(message: str):
+def compile_error(message):
     """
     Print a compile error and exit the program
     """

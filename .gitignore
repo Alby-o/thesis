@@ -25,6 +25,7 @@
 *.bcf
 *.run.xml
 *.fls
+*.pyc
 __pycache__
 temp
 out.s
