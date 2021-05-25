@@ -11,9 +11,9 @@
             "program": "annotater/annotater.py",
             "console": "integratedTerminal",
             "args": [
-                "annotater/source/pread.c", 
+                "annotater/source/test.c", 
                 "--optimisation=3",
-                "--output=annotater/out/pread.s"
+                "--output=annotater/out/test.s"
             ]
         },
         {

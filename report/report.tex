@@ -5,9 +5,36 @@
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage[toc,page]{appendix}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
 \graphicspath{ {./images/} }
 \addbibresource{bibliography.bib}
-
 
 \title{Compiler Annotation Solutions for Concurrent Information Flow Security}
 \author{Alexander Blyth}
@@ -120,15 +147,40 @@ Running a static analysis on a binary can be difficult due to the low level natu
 \subsection{Related Work}
 In safety-critical real-time software such as flight control systems, it is required to analyse the \textit{Worst Case Execution Time} (WCET). This kind of analysis can be conducted using static analysis tools to estimate safe upper bounds. In the case of AbsInt's aiT tool this analysis is conducted alongside compiler annotations to assist where loop bounds cannot be computed statically. In these cases, the user can provide annotations to guide the analysis tools \cite{schommer2018embedded}. This tool builds on an existing annotation mechanism that exist in CompCert, a C compiler that has been formally verified for use in life-critical and mission-critical software \cite{compcert}\cite{leroy2016compcert}. CompCert annotations are not limited to WCET analysis. A general mechanism for attaching free-form annotations that propagate through to assembly files can be achieved with CompCert. This approach is able to reliably transmit compiler annotations through to binary through method calls which are carried through compilation and the linked executable without using external annotation files. CompCert prints annotation strings as a comment in the generated assembly code, and an additional tool is used to parse these comments and generate annotations. However, due to its treatment as an external function, annotations cannot be placed at the top level of a compilation unit, unlike a variable declaration. Compiler optimisations can additionally cause further issues when trying to preserve annotations through compilation. If dead code is eliminated, annotations associated with that code can be lost as well. Extra care needs to be taken to avoid these optimisations destroying links between properties and the code they refer to during such transformations.
 
+\label{section:compCert}
+TODO: Include further documentation on how to use Compiler \& inline assembly
+% https://compcert.org/man/manual006.html#sec112
+
 A similar approach to CompCert is used by The ENTRA (Whole-Systems ENergy TRAnsparency). As part of providing a common assertion language, pragmas are used to propagate information through to comments in the assembler files. Information is retained in LLVM IR and ISA representations. However, these annotations are not stored in the final binary and thus comments must be extracted from assembler files \cite{eder2013common}.
 
 Vu et al. \cite{vu2020secure} explore capturing and propagating properties from the source code level though though lowering passes and intermediate representations. Their goal was to maintain these properties to binary through aggressive compiler optimisations. As compilers only care about functional correctness, they have no notion of the link between properties and the code it refers to. Thus, there is no way to constrain transformations to preserve this link or to update these properties after the transformation. As such, they approached the problem to create a generic solution, modifying a LLVM compiler with virtually no optimisation changes. This was done by creating a library in LLVM. The properties were stored in strings, and these strings were parsed to build a list of observed variables and memory location. A LLVM pass was inserted to store all these properties in metadata. After each optimisation pass, a verification pass was inserted to check the presence of metadata representing the properties, variables amd memory locations. If an optimisation pass had cased the verification to fail the programmer would then be notified, to which they could annotate differently or disable the optimisation.
 
+\pagebreak
 \section{Approach and Execution}
 The approach was set out by first analysing existing methods of preserving annotations through intermediate representations. This primarily consisted of the CompCert compiler and assembly annotation tools provided with the compiler. It was found that the CompCert compiler could not handle all cases necessary for the wpif analysis, namely volatile variables and loop invariants. Following this, inline assembly, the GNU C extension, was explored as a possibility to preserve annotations in C. This technique prevailed and was found to be excellent in handling assembly annotations by injecting comments in to the compiled assembly output, and was . This technique was enhanced by developing a python program to inject inline assembly into the source C files to allow for enhanced analysis and furthermore avoids restricting the program to GNU extension supporting compilers.
 
+A suite of test C programs (See Appendix \ref{appendix:testPrograms}) were created to assist in guiding the process of evaluating the CompCert compiler as a possible means of preserving annotations. Each program has inline comments documenting the annotation that should be preserved and its location within the program. Additionally, each program aims to test a separate elements required to perform a static wpif analysis. Namely, these are to preserve the following through to the assembly output:
+
+\begin{enumerate}
+    \item comments,
+    \item simple and complex variables (e.g. struct elements and volatile global variables),
+    \item security policies,
+    \item predicates on the initial state, and
+    \item loop invariants.
+\end{enumerate}
+
+TODO: Include:
+\begin{itemize}
+    \item analysis of the results \& quality
+    \item runtime efficiency comparison
+\end{itemize}
+
 \subsection{CompCert Annotations}
-CompCert is unfortunately not a free tool, however, for research purposes it can be used freely. The install specifications are listed in TODO.
+CompCert is unfortunately not a free tool, however, for research purposes it can be used freely. The specifications of the CompCert install can be seen in Table \ref{table:compcertInstall}. 
+
+Testing was initially conducted with the \textit{comment.c} test file, where the comment was replaced with the call to generate an annotation in the compiled assembly. This assembly annotation is created through the use of the \texttt{\_\_builtin\_annot} function described in \ref{section:compCert}.
+
+\subsubsection{CompCert Results}
 
 \begin{table}
     \begin{center}
@@ -147,10 +199,14 @@ CompCert is unfortunately not a free tool, however, for research purposes it can
             \hline
         \end{tabularx}
     \end{center}
-    \caption{Risk level descriptions}
-    \label{table:risklevel}
+    \caption{CompCert install specifications}
+    \label{table:compcertInstall}
 \end{table}
 
 \clearpage
 \printbibliography
+\clearpage
+
+\input{appendix.tex}
+% TODO: Put appendix in separate file
 \end{document}
