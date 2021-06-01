@@ -10,6 +10,7 @@
         "heartbleed",
         "plugins",
         "reusability",
+        "structs",
         "wpif"
     ],
     "python.linting.pylintEnabled": true,

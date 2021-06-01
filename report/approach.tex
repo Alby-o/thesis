@@ -63,7 +63,7 @@ The program \textit{pread.c} is a culmination of all the previous test cases, an
 
 \subsection{Quality Analysis}
 \label{subsec:qualityAnalysis}
-Although a method of preserving c annotations may be able to successfully pass all the test cases, it is important to avoid modifying the compiled assembly or binary output. The reason for performing a static analysis on the compiled output is due to compiler optimisations 
+Although a method of preserving c annotations may be able to successfully pass all the test cases, it is important to avoid modifying the compiled assembly or binary output. The reason for performing a static analysis on the compiled output is due to the optimisations performed by the compiler. As such, it is important to ensure that preserved annotations do not remove or undo any optimisations 
 
 - compiler optimisation
 
@@ -72,59 +72,3 @@ Although a method of preserving c annotations may be able to successfully pass a
 
 \subsection{Runtime Efficiency and Optimisation}
 \label{subsec:runtimeEfficiencyOptimisation}
-
-
-
-\clearpage
-\section{Execution}
-Testing began with the CompCert compiler and assembly annotation tools provided within, outlined in section \ref{subsec:compCert}. It was found that the CompCert compiler could not handle all cases necessary for the wpif analysis, specifically volatile variables. As a result, the testing moved on to other techniques. Following this, the GNU C extension for inline assembly was explored as a possibility to preserve annotations in C in section \ref{subsec:inlineAssembly}. This technique prevailed and was found to be excellent in handling assembly annotations by injecting comments in to the compiled assembly output. This technique was enhanced by developing a python program to inject inline assembly into the source C files to allow for enhanced analysis and furthermore avoids restricting the program to GNU extension supporting compilers. As a result of the success, modifying the compiler was not explored due to success documented in other research such as the work conducted by Vu et al. \cite{vu2020secure}. This allowed for further development and improvement of the inline assembly method.
-
-\subsection{CompCert Annotations}
-\label{subsec:compCert}
-CompCert is unfortunately not a free tool, however, for research purposes it can be used freely. The specifications of the CompCert install can be seen in Table \ref{tab:compcertInstall}. 
-
-\begin{table}
-    \begin{center}
-        \begin{tabularx}{\linewidth} { 
-            | >{\hsize=.7\hsize\linewidth=\hsize}X 
-            | >{\hsize=1.3\hsize\linewidth=\hsize}X  | }
-            \hline
-            OS Name & Ubuntu 20.04.2 LTS \\
-            \hline
-            OS Type & 64-bit \\
-            \hline
-            Processor & Intel® Core™ i7-6700K CPU @ 4.00GHz × 8 \\
-            \hline
-            \raggedright
-            CompCert Version & The CompCert C verified compiler, version 3.7 \\
-            \hline
-        \end{tabularx}
-    \end{center}
-    \caption{CompCert install specifications}
-    \label{tab:compcertInstall}
-\end{table}
-
-Testing was initially conducted using the \textit{comment.c} test file. The goal is to propagate the comment down to assembly where it can be used and interpreted. To do so, the comment in the source code needs to be replaced with a call to generate an annotation in the compiled assembly. Fortunately, with the compCert compiler, this functionality is builtin. This assembly annotation is created through the use of the \texttt{\_\_builtin\_annot} function described in \ref{subsec:relatedWorkCompCert}. The following builtin annotation was placed in line 2, within the main function in \textit{comment.c}.
-
-\begin{lstlisting}[language=C]
-__builtin_ais_annot("%here Critical Comment");
-\end{lstlisting}
-
-Within this annotation, \code{\%here} is used to represent the location within the program. If the location is not important, \code{\%here} can be omitted. The comment, \code{"Critical Comment"}, has been included to represent some kind of critical comment that is required to conduct a static analysis on the output. The full compiled output can be seen in Appendix \ref{app:compCertOutput}.
-
-\subsubsection{CompCert Results}
-
-\subsection{Inline Assembly}
-
-\subsection{LLVM Compiler Modification}
-the final technique of modifying the LLVM compiler was not experimented on. This was primarily due to two reasons. To begin with, the primary objective of this thesis is to explore techniques that do not modify the compiler, and instead work alongside the functionality of the compiler to preserve annotations. It is well known and documented that modifying the compiler to preserve annotations is possible and successful, as in the case of Vu et al. \cite{vu2020secure} Additionally, earlier success through the technique of using inline assembly allowed for more time to be allocated to exploring and improving this technique, as will be seen in section \ref{subsec:inlineAssembly}.
-
-\label{subsec:inlineAssembly}
-% // error: access to volatile variable 'z' for parameter '%e1' is not supported in ais annotations
-% // error: access to volatile variable 'x' for parameter '%e1' is not supported in ais annotations
-% // error: access to volatile variable 'z' for parameter '%e2' is not supported in ais annotations
-
-% TODO: 
-% - Inline assembly
-% - Source Code documentation
-% - Speed Comparison Normal, CompCert, Inline Ass
