@@ -27,7 +27,8 @@ int main(void) {
     // EXCEPTIONAL
     rooster = 1;
     drake = 5;
-    goose = 10;int result;
+    goose = 10;
+    int result;
     result = fun(rooster,drake,goose);
     return 0;
 }
