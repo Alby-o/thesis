@@ -1,0 +1,62 @@
+
+% !TeX root = ./report.tex
+\section{Approach and Execution}
+The approach was set out by first analysing existing methods of preserving annotations through intermediate representations. This primarily consisted of the CompCert compiler and assembly annotation tools provided with the compiler. It was found that the CompCert compiler could not handle all cases necessary for the wpif analysis, namely volatile variables and loop invariants. Following this, inline assembly, the GNU C extension, was explored as a possibility to preserve annotations in C. This technique prevailed and was found to be excellent in handling assembly annotations by injecting comments in to the compiled assembly output, and was . This technique was enhanced by developing a python program to inject inline assembly into the source C files to allow for enhanced analysis and furthermore avoids restricting the program to GNU extension supporting compilers.
+
+A suite of test C programs (See Appendix \ref{app:testPrograms}) were created to assist in guiding the process of evaluating the CompCert compiler as a possible means of preserving annotations. Each program has inline comments documenting the annotation that should be preserved and its location within the program. Additionally, each program aims to test a separate elements required to perform a static wpif analysis. Namely, these are to preserve the following through to the assembly output:
+
+\begin{enumerate}
+    \item comments,
+    \item simple and complex variables (e.g. struct elements and volatile global variables),
+    \item security policies,
+    \item predicates on the initial state, and
+    \item loop invariants.
+\end{enumerate}
+
+TODO: Include:
+\begin{itemize}
+    \item analysis of the results \& quality
+    \item runtime efficiency comparison
+\end{itemize}
+
+\subsection{CompCert Annotations}
+CompCert is unfortunately not a free tool, however, for research purposes it can be used freely. The specifications of the CompCert install can be seen in Table \ref{tab:compcertInstall}. 
+
+\begin{table}
+    \begin{center}
+        \begin{tabularx}{\linewidth} { 
+            | >{\hsize=.7\hsize\linewidth=\hsize}X 
+            | >{\hsize=1.3\hsize\linewidth=\hsize}X  | }
+            \hline
+            OS Name & Ubuntu 20.04.2 LTS \\
+            \hline
+            OS Type & 64-bit \\
+            \hline
+            Processor & Intel® Core™ i7-6700K CPU @ 4.00GHz × 8 \\
+            \hline
+            \raggedright
+            CompCert Version & The CompCert C verified compiler, version 3.7 \\
+            \hline
+        \end{tabularx}
+    \end{center}
+    \caption{CompCert install specifications}
+    \label{tab:compcertInstall}
+\end{table}
+
+Testing was initially conducted with the \textit{comment.c} test file, where the comment was replaced with the call to generate an annotation in the compiled assembly. This assembly annotation is created through the use of the \texttt{\_\_builtin\_annot} function described in \ref{sec:compCert}. The following builtin annotation was placed in line 2, within the main function in \textit{comment.c}.
+
+\begin{lstlisting}[language=C]
+__builtin_ais_annot("%here Critical Comment");
+\end{lstlisting}
+
+Within this annotation, \code{\%here} is used to represent the location within the program. If the location is not important, \code{\%here} can be omitted. The comment, \code{"Critical Comment"}, has been included to represent some kind of critical comment that is required to conduct a static analysis on the output. The full compiled output can be seen in Appendix \ref{app:compCertOutput}.
+
+\subsubsection{CompCert Results}
+% // error: access to volatile variable 'z' for parameter '%e1' is not supported in ais annotations
+% // error: access to volatile variable 'x' for parameter '%e1' is not supported in ais annotations
+% // error: access to volatile variable 'z' for parameter '%e2' is not supported in ais annotations
+
+% TODO: 
+% - Inline assembly
+% - Source Code documentation
+% - Speed Comparison Normal, CompCert, Inline Ass

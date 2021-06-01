@@ -3,13 +3,19 @@
 \onecolumn
 \begin{appendices}
 \section{Test C Programs}
-\label{appendix:testPrograms}
+\label{app:testPrograms}
 
 \subsection{comment.c}
 \lstinputlisting[language=C]{source/comment.c}
 
 \subsection{variable.c}
 \lstinputlisting[language=C]{source/variable.c}
+
+\subsection{volatile.c}
+\lstinputlisting[language=C]{source/volatile.c}
+
+\subsection{loop.c}
+\lstinputlisting[language=C]{source/loop.c}
 
 \subsection{rooster.c}
 \lstinputlisting[language=C]{source/rooster.c}
@@ -22,4 +28,74 @@
 
 \subsection{pread.c}
 \lstinputlisting[language=C]{source/pread.c}
+
+\section{CompCert Annotated C Programs}
+\label{app:compCertC}
+\subsection{comment.c}
+\lstinputlisting[language=C]{source/compCert/comment.c}
+
+\subsection{variable.c}
+\lstinputlisting[language=C]{source/compCert/variable.c}
+
+\subsection{volatile.c}
+\lstinputlisting[language=C]{source/compCert/volatile.c}
+
+\subsection{loop.c}
+\lstinputlisting[language=C]{source/compCert/loop.c}
+
+\subsection{rooster.c}
+\lstinputlisting[language=C]{source/compCert/rooster.c}
+
+\subsection{password.c}
+\lstinputlisting[language=C]{source/compCert/password.c}
+
+\subsection{deadStoreElimination.c}
+\lstinputlisting[language=C]{source/compCert/deadStoreElimination.c}
+
+\subsection{pread.c}
+\lstinputlisting[language=C]{source/compCert/pread.c}
+
+
+\section{CompCert Annotated Assembly Output}
+\lstset{language=[x64]Assembler}
+\subsection{comment-O0.s}
+\lstinputlisting{source/compCert/comment-O0.s}
+\subsection{comment-O3.s}
+\lstinputlisting{source/compCert/comment-O3.s}
+
+\subsection{variable-O0.s}
+\lstinputlisting{source/compCert/variable-O0.s}
+\subsection{variable-O3.s}
+\lstinputlisting{source/compCert/variable-O3.s}
+
+\subsection{volatile-O0.s}
+\lstinputlisting{source/compCert/volatile-O0.s}
+\subsection{volatile-O3.s}
+\lstinputlisting{source/compCert/volatile-O3.s}
+
+\subsection{loop-O0.s}
+\lstinputlisting{source/compCert/loop-O0.s}
+\subsection{loop-O3.s}
+\lstinputlisting{source/compCert/loop-O3.s}
+
+\subsection{rooster-O0.s}
+\lstinputlisting{source/compCert/rooster-O0.s}
+\subsection{rooster-O3.s}
+\lstinputlisting{source/compCert/rooster-O3.s}
+
+\subsection{password-O0.s}
+\lstinputlisting{source/compCert/password-O0.s}
+\subsection{password-O3.s}
+\lstinputlisting{source/compCert/password-O3.s}
+
+\subsection{deadStoreElimination-O0.s}
+\lstinputlisting{source/compCert/deadStoreElimination-O0.s}
+\subsection{deadStoreElimination-O3.s}
+\lstinputlisting{source/compCert/deadStoreElimination-O3.s}
+
+\subsection{pread-O0.s}
+\lstinputlisting{source/compCert/pread-O0.s}
+\subsection{pread-O3.s}
+\lstinputlisting{source/compCert/pread-O3.s}
+\label{app:compCertOutput}
 \end{appendices}
