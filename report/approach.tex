@@ -63,12 +63,34 @@ The program \textit{pread.c} is a culmination of all the previous test cases, an
 
 \subsection{Quality Analysis}
 \label{subsec:qualityAnalysis}
-Although a method of preserving c annotations may be able to successfully pass all the test cases, it is important to avoid modifying the compiled assembly or binary output. The reason for performing a static analysis on the compiled output is due to the optimisations performed by the compiler. As such, it is important to ensure that preserved annotations do not remove or undo any optimisations 
+Although a method of preserving c annotations may be able to successfully pass all the test cases, it is important to avoid modifying the assembly instructions. The reason for performing a static analysis on the compiled output is due to the optimisations performed by the compiler. As such, it is important to ensure that preserved annotations do not remove or undo any optimisations that may have been performed by the compiler. 
 
-- compiler optimisation
+The methodology for testing quality in this manner is to compare the compiled assembly output for a program with annotations on to the compiled assembly output for the same program without annotations. If unnecessary assembly instructions have been added, it is indicative that the annotations has modified the program in unintended ways. 
+
+\subsection{Efficiency and Optimisation}
+\label{subsec:runtimeEfficiencyOptimisation}
+In the case that the annotations have introduced additional statements into the compiled assembly output, understanding the extent of these changes is important. Here, a efficiency analysis can be conducted on the assembly. Using big O notation, an upper bound can be placed on the program. Doing so allows for a comparison of the efficiency of the annotated and non-annotated assembly. 
+
+Let \(A(n)\) be the function describing the annotated assembly, and \(B(n)\) be the function describing the non-annotated assembly. Then,
+
+\[A(n) \in \Theta(g(n))\]
+\[B(n) \in \Theta(h(n))\]
+
+If the non-annotated assembly has a lower bound than the annotated assembly, such that
+
+\[h(n) \in O(g(n)), and\]
+\[g(n) \notin O(h(n))\]
+
+then the annotations have modified the program in a way that reduces runtime efficiency. It is important to detect when this has happened, as it indicates the annotations have reversed the intended compiler optimisations.
+
+In the case where the annotation process has resulted in additional assembly instructions inserted into the compiled output, however, they do not reduce runtime efficiency in terms of big O notation, a empirical analysis of the runtime duration of a program can be conducted to assess the disadvantage of the annotated program.
 
 \subsection{Tool Development}
 \label{subsec:toolDevelopment}
-
-\subsection{Runtime Efficiency and Optimisation}
-\label{subsec:runtimeEfficiencyOptimisation}
+In cases where it is appropriate, a tool may be developed to assist in the annotating process. This tool may either:
+\begin{itemize}
+    \item assist in the annotating process,
+    \item verify the correctness of the annotations, or
+    \item perform additional analysis on the compiled output.
+\end{itemize}
+If the approach of modifying the LLVM compiler is pursued, developing such a tool to assist the annotating process will be necessary.
