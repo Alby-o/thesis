@@ -13,21 +13,21 @@
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
 \lstdefinestyle{mystyle}{
-    backgroundcolor=\color{backcolour},   
+    backgroundcolor=\color{backcolour},
     commentstyle=\color{codegreen},
     keywordstyle=\color{magenta},
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
     basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                    
-    numbersep=5pt,                  
-    showspaces=false,                
+    breakatwhitespace=true,
+    breaklines=true, 
+    captionpos=b,
+    keepspaces=true, 
+    numbers=left,
+    numbersep=3pt,
+    showspaces=false,
     showstringspaces=false,
-    showtabs=false,                  
+    showtabs=false,
     tabsize=2
 }
 \lstset{style=mystyle}
@@ -47,10 +47,12 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\miniheading}[1]{\noindent\makebox[\columnwidth][l]{\textbf{#1}}}
 
+\setlength{\columnsep}{15pt}
+
 \graphicspath{ {./images/} }
 \addbibresource{bibliography.bib}
 
-\title{Compiler Annotation Solutions for Concurrent Information Flow Security}
+\title{C Annotations for Concurrent Information Flow Security}
 \author{Alexander Blyth}
 \date{June 2021}
 
