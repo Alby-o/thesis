@@ -93,7 +93,12 @@ As seen in the assembly annotations, the location of the struct members have bee
 \subsubsection{Quality Analysis}
 - Look at comparison with optimisation turned on
 
-
+\begin{enumerate}
+    \item Compare comment-O0 / comment-O3 with no annotations - no difference since can't affect with annotations on / off
+    \item compare variable vs variable - see how variables are optimised out
+    \item look at loop example from compcert paper - see if can replicate
+    \item Look at loop optimisations
+\end{enumerate}
 
 
 \subsection{Inline Assembly}
