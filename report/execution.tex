@@ -80,14 +80,21 @@ Aside from the aforementioned issues, the CompCert AIS annotations performed exc
 From \textit{rooster.c}, the comment "CRITICAL COMMENT" has been annotated from lines 88 to 91, and the comment "EXCEPTIONAL" has been annotated from lines 99 to 102. Most notably, the global variable \code{goose} has been annotated from lines 92 to 98. Reconstructed, the string \code{"L(mem(goose, 4)) = medium"} has been preserved. Thus, the CompCert annotations can successfully preserve annotations on global variables.
 
 
-Another interesting problem faced when working with CompCert AIS annotations is found when working with structs. If the programmer wants to annotate a member of a struct for all structs of that type, each instance of that type of struct must be annotated when using CompCert AIS annotations. This is because CompCert treats \code{\_\_builtin\_ais\_annot()} as a call to an external function. As such, an annotation cannot be created from outside a method, similar to when dealing with global variables. An example of this process can be seen in \textit{password.c}. Within the program, each instantiation of the struct \code{user\_t} requires another annotation.
+Another interesting problem faced when working with CompCert AIS annotations is found when working with structs. If the programmer wants to annotate a member of a struct for all structs of that type, each instance of that type of struct must be annotated when using CompCert AIS annotations. This is because CompCert treats \code{\_\_builtin\_ais\_annot()} as a call to an external function. As such, an annotation cannot be created from outside a method, similar to when dealing with global variables. An example of this process can be seen in \textit{password.c}. Within the program, each instantiation of the struct \code{user\_t} requires another annotation. 
 
 \lstinputlisting[firstline=17, firstnumber=17, lastline=33, caption=password.c, language=C]{source/compCert/password.c}
 
+The compiled output is as expected, with an annotation within the assembly for each of the annotations created within the source file.
 
+\lstinputlisting[firstline=320, firstnumber=320, caption=password-O0.s]{source/compCert/password-O0.s}
+
+As seen in the assembly annotations, the location of the struct members have been preserved. Line 324 contains the annotation \code{L((reg("rbp") + 264)) = high}. This annotation notifies that the variable stored in register rbp with an offset of 264 has a security classification of high. Thus, another success for CompCert AIS annotations.
 
 \subsubsection{Quality Analysis}
-- TODO: How good is the compcert yo
+- Look at comparison with optimisation turned on
+
+
+
 
 \subsection{Inline Assembly}
 \label{subsec:inlineAssembly}
