@@ -1,0 +1,58 @@
+2c2
+< # Command line: rooster.c -S -O3 -o compCert/out/rooster-O3.s
+---
+> # Command line: rooster.c -O3 -S
+20a21
+> .L100:
+24c25
+< 	jl	.L100
+---
+> 	jl	.L101
+32,33c33,34
+< 	je	.L101
+< .L102:
+---
+> 	je	.L102
+> .L103:
+35c36
+< 	je	.L101
+---
+> 	je	.L102
+40c41
+< .L103:
+---
+> .L104:
+42c43
+< 	je	.L102
+---
+> 	je	.L103
+47,48c48,49
+< 	jmp	.L103
+< .L101:
+---
+> 	jmp	.L104
+> .L102:
+50c51
+< .L100:
+---
+> .L101:
+64a66,67
+> .L105:
+> .L106:
+80a84,99
+> 	.section	"__compcert_ais_annotations","",@note
+> 	.ascii "# file:rooster.c line:6 function:fun\n"
+> 	.byte 7,8
+> 	.quad .L100
+> 	.ascii " CRITICAL COMMENT\n"
+> 	.ascii "# file:rooster.c line:26 function:main\n"
+> 	.byte 7,8
+> 	.quad .L105
+> 	.ascii " L(mem("
+> 	.byte 7,8
+> 	.quad goose
+> 	.ascii ", 4)) = medium\n"
+> 	.ascii "# file:rooster.c line:27 function:main\n"
+> 	.byte 7,8
+> 	.quad .L106
+> 	.ascii " EXCEPTIONAL\n"

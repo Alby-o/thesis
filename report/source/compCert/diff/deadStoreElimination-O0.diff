@@ -1,0 +1,25 @@
+2c2
+< # Command line: deadStoreElimination.c -S -O0 -o compCert/out/deadStoreElimination-O0.s
+---
+> # Command line: deadStoreElimination.c -O0 -S
+11a12
+> 	movl	$43981, %ecx
+12a14,15
+> 	nop
+> .L101:
+14c17
+< 	jle	.L101
+---
+> 	jle	.L102
+16,17c19,20
+< 	jmp	.L100
+< .L101:
+---
+> 	jmp	.L101
+> .L102:
+40a44,48
+> 	.section	"__compcert_ais_annotations","",@note
+> 	.ascii "# file:deadStoreElimination.c line:3 function:deadStore\n"
+> 	.byte 7,8
+> 	.quad .L100
+> 	.ascii " L(reg(\"rcx\")) = high\n"

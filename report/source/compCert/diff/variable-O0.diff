@@ -1,0 +1,66 @@
+2c2
+< # Command line: variable.c -S -O0 -o compCert/out/variable-O0.s
+---
+> # Command line: variable.c -S -O0
+12a13
+> .L100:
+13a15
+> .L101:
+15c17,19
+< 	movl	$1, %r8d
+---
+> .L102:
+> 	movl	$1, %r10d
+> .L103:
+17c21,22
+< 	movsd	.L100(%rip), %xmm1 # 3.14159265358979312
+---
+> .L104:
+> 	movsd	.L105(%rip), %xmm1 # 3.14159265358979312
+20c25
+< 	movsd	.L101(%rip), %xmm2 # 2.37840000000000007
+---
+> 	movsd	.L106(%rip), %xmm2 # 2.37840000000000007
+27,28c32,33
+< 	leal	0(%r9d,%ecx,1), %r10d
+< 	leal	0(%r10d,%r8d,1), %r8d
+---
+> 	leal	0(%r9d,%ecx,1), %r8d
+> 	leal	0(%r8d,%r10d,1), %r10d
+30,33c35,38
+< 	leal	0(%r8d,%edx,1), %r8d
+< 	cvttsd2si %xmm0, %eax
+< 	leal	0(%r8d,%eax,1), %r11d
+< 	leal	0(%r11d,%edi,1), %eax
+---
+> 	leal	0(%r10d,%edx,1), %r11d
+> 	cvttsd2si %xmm0, %r8d
+> 	leal	0(%r11d,%r8d,1), %ecx
+> 	leal	0(%ecx,%edi,1), %eax
+41,42c46,68
+< .L100:	.quad	0x400921fb54442d18
+< .L101:	.quad	0x400306f694467382
+---
+> .L105:	.quad	0x400921fb54442d18
+> .L106:	.quad	0x400306f694467382
+> 	.section	"__compcert_ais_annotations","",@note
+> 	.ascii "# file:variable.c line:3 function:main\n"
+> 	.byte 7,8
+> 	.quad .L100
+> 	.ascii " reg(\"rsi\") = int\n"
+> 	.ascii "# file:variable.c line:5 function:main\n"
+> 	.byte 7,8
+> 	.quad .L101
+> 	.ascii " reg(\"rcx\") = char\n"
+> 	.ascii "# file:variable.c line:7 function:main\n"
+> 	.byte 7,8
+> 	.quad .L102
+> 	.ascii " reg(\"rcx\") = unsigned int\n"
+> 	.ascii "# file:variable.c line:9 function:main\n"
+> 	.byte 7,8
+> 	.quad .L103
+> 	.ascii " reg(\"r10\") = short\n"
+> 	.ascii "# file:variable.c line:11 function:main\n"
+> 	.byte 7,8
+> 	.quad .L104
+> 	.ascii " reg(\"rax\") = long\n"

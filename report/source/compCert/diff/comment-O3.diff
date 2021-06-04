@@ -1,0 +1,12 @@
+2c2
+< # Command line: comment.c -S -O3 -o compCert/out/comment-O3.s
+---
+> # Command line: comment.c -O3 -S
+11a12
+> .L100:
+17a19,23
+> 	.section	"__compcert_ais_annotations","",@note
+> 	.ascii "# file:comment.c line:2 function:main\n"
+> 	.byte 7,8
+> 	.quad .L100
+> 	.ascii " Critical Comment\n"

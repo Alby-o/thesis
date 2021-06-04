@@ -1,0 +1,32 @@
+2c2
+< # Command line: variable.c -S -O3 -o compCert/out/variable-O3.s
+---
+> # Command line: variable.c -S -O3
+11a12,16
+> .L100:
+> .L101:
+> .L102:
+> .L103:
+> .L104:
+17a23,43
+> 	.section	"__compcert_ais_annotations","",@note
+> 	.ascii "# file:variable.c line:3 function:main\n"
+> 	.byte 7,8
+> 	.quad .L100
+> 	.ascii " -10 = int\n"
+> 	.ascii "# file:variable.c line:5 function:main\n"
+> 	.byte 7,8
+> 	.quad .L101
+> 	.ascii " 98 = char\n"
+> 	.ascii "# file:variable.c line:7 function:main\n"
+> 	.byte 7,8
+> 	.quad .L102
+> 	.ascii " -98 = unsigned int\n"
+> 	.ascii "# file:variable.c line:9 function:main\n"
+> 	.byte 7,8
+> 	.quad .L103
+> 	.ascii " 1 = short\n"
+> 	.ascii "# file:variable.c line:11 function:main\n"
+> 	.byte 7,8
+> 	.quad .L104
+> 	.ascii " 4294967296 = long\n"

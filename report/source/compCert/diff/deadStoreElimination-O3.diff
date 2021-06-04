@@ -1,0 +1,23 @@
+2c2
+< # Command line: deadStoreElimination.c -S -O3 -o compCert/out/deadStoreElimination-O3.s
+---
+> # Command line: deadStoreElimination.c -O3 -S
+12a13,14
+> 	nop
+> .L101:
+14c16
+< 	jle	.L101
+---
+> 	jle	.L102
+16,17c18,19
+< 	jmp	.L100
+< .L101:
+---
+> 	jmp	.L101
+> .L102:
+40a43,47
+> 	.section	"__compcert_ais_annotations","",@note
+> 	.ascii "# file:deadStoreElimination.c line:3 function:deadStore\n"
+> 	.byte 7,8
+> 	.quad .L100
+> 	.ascii " L(43981) = high\n"
