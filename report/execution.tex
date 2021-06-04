@@ -91,8 +91,33 @@ The compiled output is as expected, with an annotation within the assembly for e
 As seen in the assembly annotations, the location of the struct members have been preserved. Line 324 contains the annotation \code{L((reg("rbp") + 264)) = high}. This annotation notifies that the variable stored in register rbp with an offset of 264 has a security classification of high. Thus, another success for CompCert AIS annotations.
 
 \subsubsection{Quality Analysis}
-To complete a quality analysis, a comparison of the assembly will need to be conducted with and without annotations. The CompCert assembly output can be seen in Appendix \ref{app:compCertAssembly}. As we are primarily concerned with the annotated assembly after aggressive optimisations have been performed, the assembly with optimisation level 3 will be compared. To begin with, the assembly for \textit{comment.c} will be compared. 
+To complete a quality analysis, a comparison of the assembly will need to be conducted with and without annotations. The CompCert assembly output can be seen in Appendix \ref{app:compCertAssembly}. As we are primarily concerned with the annotated assembly after aggressive optimisations have been performed, the assembly with optimisation level 3 will be compared. To begin with, the assembly for \textit{comment.c} will be compared. Performing a diff on the annotated and non annotated assembly produces the following diff:
 
+\lstinputlisting[caption=comment-O3.s diff]{source/compCert/diff/comment-O3.diff}
+
+The diff explains some interesting differences in the assembly. To begin with, an additional label \code{.L100:} has been inserted. The only other notable difference is in the compcert annotations. The reason behind the additional label is to allow the location of the annotation to be identified, as can be seen in line 11 of the diff. Thus, this shows a success. There is no difference in the compiled output, even with aggressive compiler optimisations turned on. 
+
+Next, \textit{variable-O3.s} will be compared.
+
+\lstinputlisting[caption=variable-O3.s diff]{source/compCert/diff/variable-O3.diff}
+
+Similar to before, additional labels \code{.L100:} to \code{.L104:} have been inserted to identify the annotations from within the source code. However, with aggressive optimisations turned on, an interesting change has occurred to the annotations. As the variables have been optimised out of the compiled assembly, the annotations no longer make sense. Line 16 of the diff shows the annotation for variable \code{a} from \textit{comment.c}. However, as the variable has been completely optimised out, rather than the location of the register being preserved in the annotation, only the value stored within \code{a} has been preserved. In this case, that value was \code{-10}.
+
+Although the annotations do not interfere with the compiler optimisations, the compiler optimisations have rendered the annotations useless. Unfortunately, in cases such as these, there is not much to be done. 
+
+Another interesting case arises when a loop is optimised out by the compiler. Take for example \textit{count.c}
+
+\lstinputlisting[caption=count.c, language=C]{source/compCert/count.c}
+
+As count will always be zero, the loop will be optimised out when optimisations are turned on. As CompCert treats \code{\_\_builtin\_ais\_annot()} as a call to an external function, it too will be optimised out with aggressive compiler optimisations. Let's compare the assembly with and without compiler optimisations. 
+
+\lstinputlisting[caption=count-O0.s]{source/compCert/annotated/count-O0.s}
+
+With optimisations turned off, the annotation is preserved, as seen from lines 27-31. Following the annotation, the location of the annotation can be located with label \code{.L102}. However, with compiler optimisations, it would be expected that \code{.L100} and \code{.L102} will be optimised out. This can be seen in \textit{count-O3.s}.
+
+\lstinputlisting[caption=count-O3.s]{source/compCert/annotated/count-O3.s}
+
+As expected, the optimised assembly has completely removed the annotation. In the case of a wpif analysis, this is not a large concern. Although preserving loop invariants is necessary, if the loop is optimised out by the compiler it is no longer of concern and the annotations are no longer necessary.
 
 \begin{enumerate}
     \item Compare comment-O0 / comment-O3 with no annotations - no difference since can't affect with annotations on / off
@@ -100,8 +125,6 @@ To complete a quality analysis, a comparison of the assembly will need to be con
     \item look at loop example from compcert paper - see if can replicate
     \item Look at loop optimisations
 \end{enumerate}
-
-\lstinputlisting[firstline=17, firstnumber=17, lastline=33, caption=password.c, language=C]{source/compCert/password.c}
 
 
 
