@@ -105,7 +105,18 @@ As seen in the assembly annotations, the location of the struct members have bee
 \label{subsec:inlineAssembly}
 TODO: Inline assembly techniques
 
+\begin{enumerate}
+    \item Insert comment inline assembly
+    \item Insert variable inline assembly
+    \item Volatile variable
+    \item Floats
+    \item Discuss implications of additional move statements
+    \item Quality Analysis -
+    \item speed comparison
+\end{enumerate}
+
 \subsection{CompCert Builtin Annotations}
+TODO: Revisit compcert using builtin annoations rather than AIS annotations
 
 \subsection{LLVM Compiler Modification}
 the final technique of modifying the LLVM compiler was not experimented on. This was primarily due to two reasons. To begin with, the primary objective of this thesis is to explore techniques that do not modify the compiler, and instead work alongside the functionality of the compiler to preserve annotations. It is well known and documented that modifying the compiler to preserve annotations is possible and successful, as in the case of Vu et al. \cite{vu2020secure} Additionally, earlier success through the technique of using inline assembly allowed for more time to be allocated to exploring and improving this technique, as seen in \ref{subsec:inlineAssembly}. Therefore, evaluating compiler modification for static analysis purposes was not performed in this research.
