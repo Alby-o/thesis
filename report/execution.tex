@@ -39,9 +39,9 @@ Within this annotation, \code{\%here} is used to represent the location within t
 $ ccomp comment.c -O0 -S
 \end{lstlisting}
 
-Here -O0 is used to specify to perform no optimisations during compilation. The full compiled output can be seen in Appendix \ref{app:compCertOutput}. Below is a snippet of the compiled assembly.
+Here -O0 is used to specify to perform no optimisations during compilation. The full compiled output can be seen in Appendix \ref{app:compCertAnnotatedAssembly}. Below is a snippet of the compiled assembly.
 
-\lstinputlisting[firstnumber=16, firstline=16, lastline=24, caption=comment-O0.s]{source/compCert/comment-O0.s}
+\lstinputlisting[firstnumber=16, firstline=16, lastline=24, caption=comment-O0.s]{source/compCert/annotated/comment-O0.s}
 
 The annotation is stored within assembler directives. Assembler directives are not a part of the processor instruction set, however, are a part of the assembler syntax. Assembler directives all start a period (.). On line 19 a new section has been created, named \texttt{"\_\_compcert\_ais\_annotations"}. Following the declaration of the section is an ascii string, locating the source of the annotation within the source program \textit{comment.c}. Line 23 provides the comment we aimed to preserve with our annotation. Thus, CompCert has shown an initial success in preserving annotations in the form of comments.
 
@@ -69,13 +69,13 @@ This result shows that it is impossible to use the CompCert embedded program ann
 
 It was discovered soon after that the CompCert annotations are unable to handle volatile variables, generating the follow error upon compiling \textit{volatile.c}.
 
-\lstinputlisting[numbers=none]{source/compCert/volatile-O0.s}
+\lstinputlisting[numbers=none]{source/compCert/annotated/volatile-O0.s}
 
 Unfortunately, this result shows that the CompCert AIS annotations approach is not suitable for wpif analysis. The wpif analysis requires use of volatile variables. This is because the primary purpose of the wpif technique is to verify security policy across concurrent programs. Shared variables within concurrent programs can change at any time, and as such it is imperative that shared variables are marked as volatile. As the CompCert AIS annotations cannot handle volatile variables, annotations required for wpif analysis cannot be generated.
 
 Aside from the aforementioned issues, the CompCert AIS annotations performed excellently in generating annotations. The location of global variables in memory are easily identified, as shown in \textit{rooster.c}. The CompCert AIS annotations must be placed within a method and called as if it was its own function. This creates some confusion when dealing with global variables. However, placing annotations on global variables at the start of main is a perfectly valid method of preserving these annotations. As the location of the annotation within the program is no longer important, the \code{\%here} format specifier can be omitted.
 
-\lstinputlisting[firstline=84, firstnumber=84, caption=rooster-O0.s]{source/compCert/rooster-O0.s}
+\lstinputlisting[firstline=84, firstnumber=84, caption=rooster-O0.s]{source/compCert/annotated/rooster-O0.s}
 
 From \textit{rooster.c}, the comment "CRITICAL COMMENT" has been annotated from lines 88 to 91, and the comment "EXCEPTIONAL" has been annotated from lines 99 to 102. Most notably, the global variable \code{goose} has been annotated from lines 92 to 98. Reconstructed, the string \code{"L(mem(goose, 4)) = medium"} has been preserved. Thus, the CompCert annotations can successfully preserve annotations on global variables.
 
@@ -86,12 +86,13 @@ Another interesting problem faced when working with CompCert AIS annotations is 
 
 The compiled output is as expected, with an annotation within the assembly for each of the annotations created within the source file.
 
-\lstinputlisting[firstline=320, firstnumber=320, caption=password-O0.s]{source/compCert/password-O0.s}
+\lstinputlisting[firstline=320, firstnumber=320, caption=password-O0.s]{source/compCert/annotated/password-O0.s}
 
 As seen in the assembly annotations, the location of the struct members have been preserved. Line 324 contains the annotation \code{L((reg("rbp") + 264)) = high}. This annotation notifies that the variable stored in register rbp with an offset of 264 has a security classification of high. Thus, another success for CompCert AIS annotations.
 
 \subsubsection{Quality Analysis}
-- Look at comparison with optimisation turned on
+To complete a quality analysis, a comparison of the assembly will need to be conducted with and without annotations. The CompCert assembly output can be seen in Appendix \ref{app:compCertAssembly}. As we are primarily concerned with the annotated assembly after aggressive optimisations have been performed, the assembly with optimisation level 3 will be compared. To begin with, the assembly for \textit{comment.c} will be compared. 
+
 
 \begin{enumerate}
     \item Compare comment-O0 / comment-O3 with no annotations - no difference since can't affect with annotations on / off
@@ -99,6 +100,13 @@ As seen in the assembly annotations, the location of the struct members have bee
     \item look at loop example from compcert paper - see if can replicate
     \item Look at loop optimisations
 \end{enumerate}
+
+\lstinputlisting[firstline=17, firstnumber=17, lastline=33, caption=password.c, language=C]{source/compCert/password.c}
+
+
+
+
+
 
 
 \subsection{Inline Assembly}
