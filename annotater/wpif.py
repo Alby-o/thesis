@@ -47,7 +47,7 @@ class Wpif:
                 inputOperands += ", "
             inputOperands += f'"{Wpif.constraints}"({varName})'
 
-        return f'asm("# WPIF: {comment}" : : {inputOperands});{os.linesep}'
+        return f'asm("# annotation: {comment}" : : {inputOperands});{os.linesep}'
 
     def __str__(self):
         return str(self.line_number) + ": " + self.line

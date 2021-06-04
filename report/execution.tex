@@ -119,31 +119,53 @@ With optimisations turned off, the annotation is preserved, as seen from lines 2
 
 As expected, the optimised assembly has completely removed the annotation. In the case of a wpif analysis, this is not a large concern. Although preserving loop invariants is necessary, if the loop is optimised out by the compiler it is no longer of concern and the annotations are no longer necessary.
 
-\begin{enumerate}
-    \item Compare comment-O0 / comment-O3 with no annotations - no difference since can't affect with annotations on / off
-    \item compare variable vs variable - see how variables are optimised out
-    \item look at loop example from compcert paper - see if can replicate
-    \item Look at loop optimisations
-\end{enumerate}
-
-
-
-
-
-
 
 \subsection{Inline Assembly}
 \label{subsec:inlineAssembly}
-TODO: Inline assembly techniques
+
+Extended asm is a GNU Extension supported by many compilers. As such, it presents itself as an excellent method for preserving annotations to assembly. As it allows programmers to write assembly code within the C program, it provides an opportunity to hook in to this functionality and utilise it for annotation purposes. To begin with, a very simple program will be experimented on to find the limits of inline assembly and to assess if it is fit for wpif analysis purposes. To begin with, \textit{comment.c} will be used.
+
+Within the assembly, an inline comment can be created by inserting a \code{\#} at the beginning of the line or comment. The goal with this test is to try and preserve the annotation "CRITICAL COMMENT" to assembly by inserting it as a comment within the assembly. The following line was inserted within the main method of \textit{comment.c}. All the source files used for the inline assembly method can be seen in Appendix \ref{app:InlineC}.
+
+\lstinputlisting[firstnumber=2, firstline=2, lastline=2, caption=comment.c, language=C]{source/inline/comment.c}
+
+Here, the call to insert inline assembly is treated as a call to a method, similar to CompCert. The first argument takes the \code{AssemblerTemplate}. The \code{AssemblerTemplate} is the template used for formatting the input operands, output operands and the goto parameters. In this case only a comment is inserted in assembly, and as such the input operands and output operands parameters are omitted. The full compiled output can be seen in Appendix \ref{app:inlineAnnotatedAssembly}.
+
+\lstinputlisting[firstnumber=6, firstline=6, lastline=21, caption=comment-O0.s]{source/inline/annotated/comment-O0.s}
+
+Lines 15 to 17 show the annotation preserved within the assembly. As can be seen, the compiler does not understand the extent of the assembly provided to it. As such, it treats it as a 'black box', and inserts it where relevant within the assembly instructions. In comparison to CompCert its placement within the assembly is inconvenient. As it is not neatly packaged at the bottom of the assembly it must be parsed out. To distinguish assembly comments from important annotations, the string \code{"annotation: "} will be inserted before any annotations to allow for easier parsing. Thus, the annotation described from \textit{comment.c} would be inserted as:
+
+\begin{lstlisting}[firstnumber=2, language=C]
+    asm ("# annotation: CRITICAL COMMENT");
+\end{lstlisting}
+
+Following, the compiled output would be:
+\begin{lstlisting}[firstnumber=15]
+  #APP
+  # annotation: CRITICAL COMMENT
+  #NO_APP
+\end{lstlisting}
+
+One may suggest using the \code{APP} and \code{NO\_APP} comments above and below our annotation to identify it, however, these comments are system and compiler dependent. As such, a more robust solution has been used here.
+
+Following this success, annotating the location of a variable is the next challenge. With extended asm input and output operands are available to allow programmers to work with variables. The goal is to use these mechanisms to identify the location of variables alongside their annotated data. To begin with, 
+
 
 \begin{enumerate}
-    \item Insert comment inline assembly
+    \item Install specifications
     \item Insert variable inline assembly
     \item Volatile variable
     \item Floats
     \item Discuss implications of additional move statements
     \item Quality Analysis -
     \item speed comparison
+\end{enumerate}
+
+Tool building:
+\begin{enumerate}
+    \item af
+    \item escaping special strings
+    \item Source Code documentation
 \end{enumerate}
 
 \subsection{CompCert Builtin Annotations}
@@ -154,5 +176,5 @@ the final technique of modifying the LLVM compiler was not experimented on. This
 
 % TODO: 
 % - Inline assembly
-% - Source Code documentation
+% - 
 % - Speed Comparison Normal, CompCert, Inline Ass
