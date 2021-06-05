@@ -5,7 +5,7 @@ int goose;
 
 int fun(int a, int b, int c) {
     //CRITICAL COMMENT
-    // wpif: CRITICAL COMMENT
+    // annotation: CRITICAL COMMENT
     static int count = 0;
     int sum = a + b + c;
     if (sum < 0) {
@@ -26,8 +26,8 @@ int fun(int a, int b, int c) {
 
 int main(void) {
     //EXCEPTIONAL
-    // wpif: L(var(goose)) = Medium
-    // wpif: EXCEPTIONAL
+    // annotation: L(var(goose)) = Medium
+    // annotation: EXCEPTIONAL
     rooster = 1;
     drake = 5;
     goose = 10;int result;

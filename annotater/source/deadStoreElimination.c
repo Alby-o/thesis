@@ -1,6 +1,6 @@
 int deadStore(int i, int n) {
     int key = 0xabcd;
-    // wpif: var(key) = high
+    // annotation: var(key) = high
 
     // do some work
     int result = 0;

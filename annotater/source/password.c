@@ -17,19 +17,19 @@ user_t* setup_users() {
     user_t* user_admin = malloc(sizeof(user_t));
     strcpy(user_admin->name, "admin");
     strcpy(user_admin->password, "4dm1n__4eva");
-    // wpif: L(var(user_admin->password)) = High
+    // annotation: L(var(user_admin->password)) = High
     user_admin->balance = 1000000;
 
     user_t* user_alice = malloc(sizeof(user_t));
     strcpy(user_alice->name, "alice");
     strcpy(user_alice->password, "!alice12!_veuje@@hak");
-    // wpif: L(var(user_alice->password)) = High
+    // annotation: L(var(user_alice->password)) = High
     user_alice->balance = 783;
 
     user_t* user_abdul = malloc(sizeof(user_t));
     strcpy(user_abdul->name, "abdul");
     strcpy(user_abdul->password, "passw0rd123");
-    // wpif: L(var(user_abdul->password)) = High
+    // annotation: L(var(user_abdul->password)) = High
     user_abdul->balance = 2;
 
     user_admin->next = user_alice;

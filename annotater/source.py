@@ -44,10 +44,10 @@ class Source:
     def transpile(self):
         file = open(self.filename, 'r')
         self.data = file.readlines()
-        wpif_identifier = "wpif: "
+        annot_identifier = "annotation: "
         for i, line in enumerate(self.data):
-            if wpif_identifier in line:
-                wpif = Wpif(line.split(wpif_identifier)[1], 0)
+            if annot_identifier in line:
+                wpif = Wpif(line.split(annot_identifier)[1], 0)
                 result = wpif.transform()
                 self.data[i] = result
         file.close()
