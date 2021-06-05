@@ -123,7 +123,7 @@ As expected, the optimised assembly has completely removed the annotation. In th
 \subsection{Inline Assembly}
 \label{subsec:inlineAssembly}
 
-Extended asm is a GNU Extension supported by many compilers. As such, it presents itself as an excellent method for preserving annotations to assembly. As it allows programmers to write assembly code within the C program, it provides an opportunity to hook in to this functionality and utilise it for annotation purposes. To begin with, a very simple program will be experimented on to find the limits of inline assembly and to assess if it is fit for wpif analysis purposes. To begin with, \textit{comment.c} will be used.
+Extended \code{asm} is a GNU Extension supported by many compilers. As such, it presents itself as an excellent method for preserving annotations to assembly. As it allows programmers to write assembly code within the C program, it provides an opportunity to hook in to this functionality and utilise it for annotation purposes. To begin with, a very simple program will be experimented on to find the limits of inline assembly and to assess if it is fit for wpif analysis purposes. To begin with, \textit{comment.c} will be used.
 
 Within the assembly, an inline comment can be created by inserting a \code{\#} at the beginning of the line or comment. The goal with this test is to try and preserve the annotation "CRITICAL COMMENT" to assembly by inserting it as a comment within the assembly. The following line was inserted within the main method of \textit{comment.c}. All the source files used for the inline assembly method can be seen in Appendix \ref{app:InlineC}.
 
@@ -148,8 +148,108 @@ Following, the compiled output would be:
 
 One may suggest using the \code{APP} and \code{NO\_APP} comments above and below our annotation to identify it, however, these comments are system and compiler dependent. As such, a more robust solution has been used here.
 
-Following this success, annotating the location of a variable is the next challenge. With extended asm input and output operands are available to allow programmers to work with variables. The goal is to use these mechanisms to identify the location of variables alongside their annotated data. To begin with, 
+Following this success, annotating the location of a variable is the next challenge. With extended \code{asm} input and output operands are available to allow programmers to work with variables. The goal is to use these mechanisms to identify the location of variables alongside their annotated data. To begin with, the location of a simple integer will be attempted to be preserved. The format of the extended asm is as follows:
 
+\begin{lstlisting}[language=C, numbers=none]
+asm asm-qualifiers ( AssemblerTemplate 
+    : OutputOperands
+    : InputOperands
+    : Clobbers
+    : GotoLabels)
+\end{lstlisting}
+
+Where \code{asm-qualifiers}, \code{OutputOperands}, \code{InputOperands}, \code{Clobbers} and \code{GotoLabels} are optional parameters. In this experimentation, asm-qualifiers will not be used as any inline assembly generated will not modify the value of any variables nor jump to any labels.
+
+Previously the \code{AssemblerTemplate} was used as a string. However, the string can be templated to locate the value of a variable. Take the following example:
+
+\begin{lstlisting}[language=C, numbers=none]
+asm("# annotation: %0 = int" : "=m"(a))
+\end{lstlisting}
+
+Here \code{\%0} is used to refer to the first output operand, a. Output constraints must begin with either a \code{'='} or a \code{'+'}. A constraint beginning with a \code{'='} is for variable overwriting an existing value, whereas a \code{'+'} is used when reading and writing. Constraints are used to specify what operands are permitted. In this case, \code{'m'} is used, signifying a memory operand is allowed, with any kind of address the machine supports. Compiling the inline assembly with no optimisations creates the following annotation.
+
+\begin{lstlisting}[firstnumber=30, caption=variable-O0.s]
+#APP
+# annotation: -20(%rbp) = int
+#NO_APP
+\end{lstlisting}
+
+This annotation was created without modifying any additional assembly instructions, seemingly a success. However, when optimisations are turned on an interesting result occurs.
+
+\begin{lstlisting}[firstnumber=6, caption=variable-O3.s, label=lst:inlineVariableOutputOperand]
+main:                                   # @main
+	.cfi_startproc
+# %bb.0:
+                                        # kill: def $edi killed $edi def $rdi
+	movl	$-10, -4(%rsp)
+	#APP
+	# annotation: -4(%rsp) = int
+	#NO_APP
+	movl	-4(%rsp), %eax
+	addl	%edi, %eax
+	addl	$134217635, %eax        # imm = 0x7FFFFA3
+	retq
+\end{lstlisting}
+
+Although the annotation is preserved to assembly, a number of optimisations performed by the compiler have been reverted to allow the location of the variable \code{a} to be preserved. This is because the compiler does not understand what the inline assembly does outside of what information has been provided to it. In this case, the compiler was provided inline assembly that used some kind of memory operand with the intention to overwrite it. Thus, the compiler was required to remove optimisations to allow the the rewritten value of \code{a} to be propagated through the program successfully. 
+
+This appears like a failure of the inline assembly method, however, constructing the statement differently should allow for less modification of the assembly by the compiler. Rather than instructing the compiler that the assembly overwrites the existing value, \code{'+'} can be used to instruct it that our assembly reads and writes. The following statement is inserted in the C source.
+
+\begin{lstlisting}[language=C, numbers=none]
+asm("# annotation: %0 = int" : "+m"(a))
+\end{lstlisting}
+
+However, this results in the same outcome as Listing \ref{lst:inlineVariableOutputOperand}. The issue occurring here is caused due to the output operand. As the inline \code{asm} is notifying the compiler that the value is modified, it removes optimisations to allow this. Instead, using an input operand may allow the optimisation to run, as instead the compiler has been notified that only the value is being read. The following \code{asm} is inserted in \textit{variable.c}.
+
+\begin{lstlisting}[language=C, numbers=none]
+asm("# annotation: %0 = int" : : "m"(a))
+\end{lstlisting}
+
+The \code{'+'} constraint has been removed from the operand as it no longer applies to an input operand. Listing \ref{lst:inlineVariableInputOperandO0} shows the assembly with no optimisations.
+
+\begin{lstlisting}[firstnumber=23, caption=variable-O0.s, label=lst:inlineVariableInputOperandO0]
+	movl	$0, -4(%rbp)
+	movl	%edi, -8(%rbp)
+	movq	%rsi, -16(%rbp)
+	movl	$-10, -20(%rbp)
+	#APP
+	# annotation: -20(%rbp) = int
+	#NO_APP
+	movsd	.LCPI0_0(%rip), %xmm0   # xmm0 = mem[0],zero
+	movss	.LCPI0_1(%rip), %xmm1   # xmm1 = mem[0],zero,zero,zero
+	xorl	%eax, %eax
+\end{lstlisting}
+
+Here, the annotation can be seen in line 28, with the location of the variable successfully identified. However, interestingly the instructions from lines 30-32 were previously above the instructions from lines 23-26. Although this makes no difference to the runtime of the program, it is an interesting change caused by the inline \code{asm}. 
+
+Additionally, the optimised assembly using the input operands has the same issue as before from Listing \ref{lst:inlineVariableOutputOperand}.
+
+\begin{lstlisting}[firstnumber=6, caption=variable-O3.s, label=lst:inlineVariableOutputOperand]
+    main:                                   # @main
+        .cfi_startproc
+    # %bb.0:
+                                            # kill: def $edi killed $edi def $rdi
+        movl	$-10, -4(%rsp)
+        #APP
+        # annotation: -4(%rsp) = int
+        #NO_APP
+        movl	-4(%rsp), %eax
+        addl	%edi, %eax
+        addl	$134217635, %eax        # imm = 0x7FFFFA3
+        retq
+\end{lstlisting}
+
+Further investigation revealed that the issue arises as the inline \code{asm} specifies the location of the operand must be in memory with the constraint \code{"m"(a)}. Rather than limiting the location to memory, allowing any operand available to be used allows for more optimisations to be performed by the compiler. As such, the following line of \code{asm} was tested. 
+
+\begin{lstlisting}[language=C, numbers=none]
+asm("# annotation: %0 = int" : : "X"(a))
+\end{lstlisting}
+
+Here the constraint \code{"X"(a)} specifies that any operand whatsoever is allowed. The resulting optimised assembly is as follows.
+
+Each of the different types of annotations were additionally 
+
+\clearpage
 
 \begin{enumerate}
     \item Install specifications

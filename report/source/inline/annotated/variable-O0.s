@@ -20,25 +20,53 @@ main:                                   # @main
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register %rbp
-	movsd	.LCPI0_0(%rip), %xmm0   # xmm0 = mem[0],zero
-	movss	.LCPI0_1(%rip), %xmm1   # xmm1 = mem[0],zero,zero,zero
-	xorl	%eax, %eax
 	movl	$0, -4(%rbp)
 	movl	%edi, -8(%rbp)
 	movq	%rsi, -16(%rbp)
 	movl	$-10, -20(%rbp)
+	movl	-20(%rbp), %eax
+	#APP
+	# annotation: %eax = int
+	#NO_APP
 	movb	$98, -21(%rbp)
-	movsbl	-21(%rbp), %ecx
-	subl	%ecx, %eax
+	movb	-21(%rbp), %cl
+	#APP
+	# annotation: %cl = char
+	#NO_APP
+	xorl	%eax, %eax
+	movsbl	-21(%rbp), %edx
+	subl	%edx, %eax
 	movl	%eax, -28(%rbp)
+	movl	-28(%rbp), %eax
+	#APP
+	# annotation: %eax = unsigned int
+	#NO_APP
 	movw	$1, -30(%rbp)
-	movabsq	$4294967296, %rdx       # imm = 0x100000000
-	movq	%rdx, -40(%rbp)
-	movss	%xmm1, -44(%rbp)
+	movw	-30(%rbp), %r8w
+	#APP
+	# annotation: %r8w = short
+	#NO_APP
+	movabsq	$4294967296, %rsi       # imm = 0x100000000
+	movq	%rsi, -40(%rbp)
+	movq	-40(%rbp), %rsi
+	#APP
+	# annotation: %rsi = long
+	#NO_APP
+	movss	.LCPI0_1(%rip), %xmm0   # xmm0 = mem[0],zero,zero,zero
+	movss	%xmm0, -44(%rbp)
+	movss	-44(%rbp), %xmm0        # xmm0 = mem[0],zero,zero,zero
+	#APP
+	# annotation: %xmm0 = float
+	#NO_APP
+	movsd	.LCPI0_0(%rip), %xmm0   # xmm0 = mem[0],zero
 	movss	-44(%rbp), %xmm1        # xmm1 = mem[0],zero,zero,zero
 	cvtss2sd	%xmm1, %xmm1
 	divsd	%xmm0, %xmm1
 	movsd	%xmm1, -56(%rbp)
+	movsd	-56(%rbp), %xmm0        # xmm0 = mem[0],zero
+	#APP
+	# annotation: %xmm0 = double
+	#NO_APP
 	movq	-40(%rbp), %rax
 	cqto
 	movl	$32, %esi
@@ -46,12 +74,12 @@ main:                                   # @main
                                         # kill: def $eax killed $eax killed $rax
 	addl	-20(%rbp), %eax
 	addl	-28(%rbp), %eax
-	movswl	-30(%rbp), %ecx
-	addl	%ecx, %eax
-	cvttss2si	-44(%rbp), %ecx
-	addl	%ecx, %eax
-	cvttsd2si	-56(%rbp), %ecx
-	addl	%ecx, %eax
+	movswl	-30(%rbp), %edi
+	addl	%edi, %eax
+	cvttss2si	-44(%rbp), %edi
+	addl	%edi, %eax
+	cvttsd2si	-56(%rbp), %edi
+	addl	%edi, %eax
 	addl	-8(%rbp), %eax
 	popq	%rbp
 	.cfi_def_cfa %rsp, 8
