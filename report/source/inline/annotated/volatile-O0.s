@@ -13,6 +13,10 @@ main:                                   # @main
 	.cfi_def_cfa_register %rbp
 	movl	$0, -4(%rbp)
 	movl	x, %eax
+	#APP
+	# annotation: %eax = High
+	#NO_APP
+	movl	x, %eax
 	addl	$1, %eax
 	popq	%rbp
 	.cfi_def_cfa %rsp, 8

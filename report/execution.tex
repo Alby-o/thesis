@@ -224,7 +224,7 @@ Here, the annotation can be seen in line 28, with the location of the variable s
 
 Additionally, the optimised assembly using the input operands has the same issue as before from Listing \ref{lst:inlineVariableOutputOperand}.
 
-\begin{lstlisting}[firstnumber=6, caption=variable-O3.s, label=lst:inlineVariableOutputOperand]
+\begin{lstlisting}[firstnumber=6, caption=variable-O3.s]
     main:                                   # @main
         .cfi_startproc
     # %bb.0:
@@ -247,15 +247,37 @@ asm("# annotation: %0 = int" : : "X"(a))
 
 Here the constraint \code{"X"(a)} specifies that any operand whatsoever is allowed. The resulting optimised assembly is as follows.
 
-Each of the different types of annotations were additionally 
+\lstinputlisting[caption=variable-O3.s]{source/inline/annotated/variable-O3.s}
+
+Each of the different types of annotations were additionally annotated using the same method. Some interesting results occur from this annotation technique. To begin with, because all variables have been optimised away, the location of the simple variables have instead been replaced with their value. For example, line 20 shows that the value of -10 was stored in an integer. This behaviour is identical to that observed by the CompCert annotations. Additionally, an interesting scenario occurs when working with floating point numbers. Although they too have been fully optimised out, because the inline \code{asm} has required reading their values, their value has been placed within a register designated for floating point arithmetic. 
+
+The next goal was to attempt preserving annotations from more complex variables. To begin with, a volatile, global variable will be annotated. The test file \textit{volatile.c} was experimented on.
+
+\lstinputlisting[caption=volatile.c, language=C]{source/inline/volatile.c}
+
+On line 4, an \code{asm} statement has been inserted, containing the same format and information as with \textit{variable.c}. However, the variable x is instead a volatile variable. The annotated assembly with full optimisation is listed below.
+
+\lstinputlisting[caption=volatile-O3.s]{source/inline/annotated/volatile-O3.s}
+
+Line 11 successfully shows the annotation referencing the global variable \code{x}. However, an additional move statement has been inserted on line 9. This additional move statement was quite puzzling, however, it is inserted due to the nature of the inline \code{asm}. As the compiler does not know or understand the assembly created by the programmer, additional move statements may need to be inserted by the compiler. In this case, the location of \code{x} is within the memory location \code{x(\%rip)}. Because the constraint \code{'X'} has been provided, any operand whatsoever is permitted. As a result, the compiler chose a register as the solution to fill the annotation's requirements. As such, an unnecessary move statement has been inserted. In such a case, the programmer should observe the result and update the \code{asm} restraint to only allow memory locations. Doing so results in the preferred behaviour with only the annotation inserted into the assembly. 
+
+This form of inline \code{asm} was used to test annotations across the remaining test files. The annotated assembly can be viewed in Appendix \ref{app:inlineAnnotatedAssembly}.
+
+\subsubsection{Quality Analysis}
+
+Although the annotated assembly does contain additional move statements, the program still behaves as expected. However, it does result in heightened difficulty to parse the true location of the variable. One proposed method of handling this is to build a tool to assist in this parsing and analysis. This tool is covered in section \ref{subsubsec:inlineTool}.
+
+TODO: Quality analysis
+
+\subsubsection{Tool Assisted Annotations}
+\label{subsubsec:inlineTool}
+
+
 
 \clearpage
 
 \begin{enumerate}
     \item Install specifications
-    \item Insert variable inline assembly
-    \item Volatile variable
-    \item Floats
     \item Discuss implications of additional move statements
     \item Quality Analysis -
     \item speed comparison

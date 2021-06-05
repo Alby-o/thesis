@@ -7,6 +7,10 @@ main:                                   # @main
 	.cfi_startproc
 # %bb.0:
 	movl	x(%rip), %eax
+	#APP
+	# annotation: %eax = High
+	#NO_APP
+	movl	x(%rip), %eax
 	addl	$1, %eax
 	retq
 .Lfunc_end0:
