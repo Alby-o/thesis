@@ -286,7 +286,23 @@ To allow for the program to compile without annotations, the annotations need to
 
 Annotations have been listed with an inline comment beginning with \code{// annotation:}. Following the declaration of a variable, the annotation can be listed in whatever format the programmer prefers. Line 6 shows the security policy for the variable \code{z}, denoting that its security policy is always high. Whereas, on line 7, the security policy of the variable \code{x} is dependant on the value of variable \code{z}. Also shown in this example are all the necessary annotations required for a wpif analysis.
 
-The goal of the tool is to preserve these annotations stored in these comments and compile to a format that allows for 
+The goal of the tool is to preserve these annotations stored in these comments. The approach for this technique is to parse the annotation comments from the source file. Once parsed, these comments can be converted to extended \code{asm} calls in the source file and recompiled. The annotated and non-annotated sources can then be compared to reconstruct the location of variables.
+
+To develop this tool, a python program \textit{annotator.py} was created. The program takes in three arguments;
+
+\begin{itemize}
+    \item the file to compile,
+    \item the location for the annotated output, and
+    \item the optimisation level to compile at. 
+\end{itemize}
+
+The program then creates a clone of the source file to modify. The clone is compiled to create an assembly output without annotations. This file is stored in a temporary file until it is ready to be used. The cloned source file is then transpiled. All annotations are located and transformed into extended \code{asm}. Any special characters that would break extended asm rules are appropriately escaped to allow for their preservation to assembly. This code is then injected into the cloned source file, ready for recompilation. An example of a transpiled source file can be seen in Listing \ref{lst:preadTranspiled}.
+
+\lstinputlisting[caption=pread-transpiled.c, label=lst:preadTranspiled]{source/tool/transpiled.c}
+
+As can be seen, each of these annotations follow the annotation style developed earlier in this section. Each reference of a \code{var} has been appropriately replaced with a variable constraint and corresponding operand. Once again, the transpiled source file is compiled to assembly, and the results of the assembly are compared against the non-annotated counterpart. If the only difference in each of the assembly outputs is the annotations, the process is complete and the program exits. However, if there is a difference, the programmer is notified and the difference of the two compiled sources are listed.
+
+The annotator program uses the \code{clang} compiler, however, because of the decoupled nature of the program, any compiler supporting extended \code{asm} could be used by the program. 
 
 \begin{enumerate}
     \item Install specifications
@@ -294,7 +310,7 @@ The goal of the tool is to preserve these annotations stored in these comments a
 
 Tool building:
 \begin{enumerate}
-    \item escaping special strings
+    \item not locating variable as requires parsing - left for future work
     \item Source Code documentation
 \end{enumerate}
 

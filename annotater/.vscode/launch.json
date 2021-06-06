@@ -15,12 +15,11 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "annotater.py",
+            "program": "annotator.py",
             "console": "integratedTerminal",
             "args": [
-                "source/deadStoreElimination.c",
+                "source/pread.c",
                 "--optimisation=0",
-                
             ]
         }
     ]
