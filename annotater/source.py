@@ -3,7 +3,7 @@ import shutil
 from assembly import Assembly
 from error import compile_error, copy_error
 from temp import temp_file_name
-from wpif import Wpif
+from inline_asm import InlineAsm
 
 class Source:
     def __init__(self, filename):
@@ -47,7 +47,7 @@ class Source:
         annot_identifier = "annotation: "
         for i, line in enumerate(self.data):
             if annot_identifier in line:
-                wpif = Wpif(line.split(annot_identifier)[1], 0)
+                wpif = InlineAsm(line.split(annot_identifier)[1], 0)
                 result = wpif.transform()
                 self.data[i] = result
         file.close()

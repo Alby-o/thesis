@@ -1,7 +1,7 @@
 import re
 import os
 
-class Wpif:
+class InlineAsm:
     var_regex = r'var\(.*?\)'
     escape_chars = ['%', '|', '{', '}']
     constraints = "X"
@@ -12,7 +12,7 @@ class Wpif:
     
     def transform(self):
         # Find all vars
-        vars = re.findall(Wpif.var_regex, self.line)
+        vars = re.findall(InlineAsm.var_regex, self.line)
         varNames = {}
         
         # Extract variable names
@@ -36,7 +36,7 @@ class Wpif:
         inputOperands = ""
         
         # Escape special characters
-        for char in Wpif.escape_chars:
+        for char in InlineAsm.escape_chars:
             comment = comment.replace(char, "%" + char)
         comment = comment.replace('\\', '\\\\')
             
@@ -45,7 +45,7 @@ class Wpif:
             varName = varNames[var]
             if len(inputOperands) > 0:
                 inputOperands += ", "
-            inputOperands += f'"{Wpif.constraints}"({varName})'
+            inputOperands += f'"{InlineAsm.constraints}"({varName})'
 
         return f'asm("# annotation: {comment}" : : {inputOperands});{os.linesep}'
 
