@@ -1,6 +1,6 @@
 from os import listdir
 from os.path import isfile, join
-from annotater import run
+from annotator import run
 
 sourceDir = "source"
 outputDir = "out"
