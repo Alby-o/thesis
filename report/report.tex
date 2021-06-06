@@ -1,4 +1,4 @@
-\documentclass[twocolumn]{report}
+\documentclass[12pt, a4paper]{report}
 \usepackage[utf8]{inputenc}
 \usepackage{biblatex}
 \usepackage{listings}
@@ -7,8 +7,10 @@
 \usepackage{xcolor}
 \usepackage[toc,page]{appendix}
 \usepackage{setspace}
-
-% \setstretch{1.5}
+\usepackage[margin=1in]{geometry}
+\setstretch{1.5}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -64,10 +66,10 @@
 
 \tableofcontents
 
-
+\clearpage
 \textbf{\textit{Abstract} - Information flow security in concurrency is difficult due to the increasing complexity introduced with multiple threads. Additionally, compiler optimisations can break security guarantees that have been verified in source code. In this paper, we propose a thesis to explore these issues through providing annotations in C source code that propagate through to the binary or assembly. These annotations could then be used to guide a static analysis of information flow security in concurrency. This approach involves (1) capturing C source code annotations provided by the user about the security policy of data and variables and (2) passing these annotations down to lower representations where static analysis tools can be utilised to identify security vulnerabilities in the produced binary. }
 
-\section{Topic Definition}
+\chapter{Topic Definition}
 This paper describes the motivation, background knowledge and plan for the proposed thesis \textit{Compiler Annotation Solutions for Concurrent Information Flow Security}.
 
 There is a high degree of complexity in verifying security guarantees in concurrent programs \cite{mantel2014noninterference}\cite{smith2019value}\cite{vaughan2012secure}. Additionally, aggressive compiler optimisations can modify the binary output in unexpected ways \cite{d2015correctness}. To preserve the security of a program, the flow of sensitive information must be protected to avoid flowing in to untrusted sources \cite{balliu2014logics}. This is where static analysis tools can be used to verify the integrity of security guarantees and the flow of sensitive information. In this thesis, we look to explore a solution to information flow security in concurrent programs through analysing the output after aggressive compiler optimisations.
