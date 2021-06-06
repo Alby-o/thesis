@@ -1,0 +1,12 @@
+2c2
+< # Command line: variable.c -S -O3 -o compCert/out/variable-O3.s
+---
+> # Command line: variable.c -S -O3 -o annotated/variable-O3.s
+11a12,18
+> # annotation: "-10 = int"
+> # annotation: "98 = char"
+> # annotation: "-98 = unsigned int"
+> # annotation: "1 = short"
+> # annotation: "4294967296 = long"
+> # annotation: "3.14159274101257324 = float"
+> # annotation: "1.32088493988083289 = double"

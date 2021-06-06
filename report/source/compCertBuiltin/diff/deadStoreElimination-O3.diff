@@ -1,0 +1,6 @@
+2c2
+< # Command line: deadStoreElimination.c -S -O3 -o compCert/out/deadStoreElimination-O3.s
+---
+> # Command line: deadStoreElimination.c -S -O3 -o annotated/deadStoreElimination-O3.s
+11a12
+> # annotation: "L(43981) = high"

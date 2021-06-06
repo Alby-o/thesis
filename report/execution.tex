@@ -122,13 +122,77 @@ As expected, the optimised assembly has completely removed the annotation. In th
 
 \section{CompCert Builtin Annotations}
 
-Upon revisiting CompCert AIS annotations, it became apparent that the form of annotations being experimented on previously, namely AIS annotations, were not the only form of C annotations available to CompCert. The CompCert AIS annotations are built on top of the CompCert builtin annotations. The AIS annotations are built primarily for worst case execution time analysis, and thus it was assumed that these annotations would be the most suitable for wpif purposes. However,  Similar to the AIS annotations, the CompCert builtin annotations can be called upon using a method call.
+Upon revisiting CompCert AIS annotations, it became apparent that the form of annotations being experimented on previously, namely AIS annotations, were not the only form of C annotations available to CompCert. The CompCert AIS annotations are built on top of the CompCert builtin annotations. The AIS annotations are built primarily for worst case execution time analysis, and thus it was assumed that these annotations would be the most suitable for wpif purposes. However,  Similar to the AIS annotations, the CompCert builtin annotations can be called upon using a method call, \code{\_\_builtin\_annot()}. To begin with, annotating \code{"CRITICIAL COMMENT"} will be tested. The call to \code{\_\_builtin\_annot()} can be seen below.
 
+\lstinputlisting[firstnumber=2, firstline=2, lastline=2, caption=comment.c]{source/compCertBuiltin/comment.c}
+
+Once compiled to assembly, rather than outputting to the bottom of the assembly within assembler directives. Instead, it is placed in the middle of the assembly as a comment. The annotated assembly from the builtin annotation can be seen below.
+
+\lstinputlisting[caption=comment-O0.s]{source/compCertBuiltin/annotated/comment-O0.s}
+
+On line 12, the annotation has been inserted, with "Critical Comment" preserved. Rather than using the \code{\%here} directive to locate the annotation, the annotation itself has been placed directly within source code in the relevant location. A variable annotation is created in a similar fashion to the CompCert AIS annotations. 
+
+\lstinputlisting[firstnumber=3, firstline=3, lastline=3, caption=variable.c, label=lst:compCertBuiltinVariable]{source/compCertBuiltin/variable.c}
+
+Within Listing \ref{lst:compCertBuiltinVariable}, the variable a has been annotated with its type. Rather than using \code{\%e1} and so on to reference each element, positional parameters \code{\%1}, \code{\%2}, etc, can be used to locate variables. The annotated assembly is as expected.
+
+\lstinputlisting[firstnumber=6, firstline=6, lastline=28, caption=variable-O0.s]{source/compCertBuiltin/annotated/variable-O0.s}
+
+Significantly, there is no issues caused by annotating floating point numbers, a surprising success. This suggests that CompCert builtin annotations may able to perform annotations that CompCert AIS annotations cannot. Also worth noting is how this method performs under compiler optimisations. Similar to AIS annotations, when variables are optimised away only their value remains within the annotation.
+
+\lstinputlisting[firstnumber=6, firstline=6, caption=variable-O3.s]{source/compCertBuiltin/annotated/variable-O3.s}
+
+The primary reason AIS annotations were not appropriate as a method for wpif analysis was because the technique could not handle volatile variables. However, the builtin annotations can. Below is the builtin annotation for a volatile global variable \code{x}.
+
+\lstinputlisting[caption=volatile.c]{source/compCertBuiltin/volatile.c}
+
+Successfully, the annotation is compiled into the assembly. The annotated assembly can be seen in Listing \ref{lst:compCertAnnotatedVolatile}.
+
+\lstinputlisting[firstnumber=7, firstline=7, caption=volatile-O3.s, label=lst:compCertAnnotatedVolatile]{source/compCertBuiltin/annotated/volatile-O3.s}
+
+Further testing shows the CompCert builtin annotation method is viable for all purposes for wpif analysis.
+
+\subsection{Quality Analysis}
+
+As the AIS annotations are built on top of the functionality of the CompCert builtin annotations, the results of the quality analysis are very similar. For the majority of annotations observed, the only difference between the annotated and non-annotated assembly was the annotations. Take for example \textit{variable-O0.s}.
+
+\lstinputlisting[lastline=28, caption=variable-O0.s diff]{source/compCertBuiltin/diff/variable-O0.diff}
+
+Although it appears as if many changes have been made, the only modifications are to the locations within memory and registers. The last half of the diff has not been included here for spacial purposes.
+
+However, interesting changes occur when working with more complex programs. For example, \textit{volatile-O3.s}.
+
+\lstinputlisting[caption=volatile-O3.s diff]{source/compCertBuiltin/diff/volatile-O3.diff}
+
+Line 6 of the diff shows and interesting occurrence. An additional move statement has been added. This was behaviour not observed from the CompCert AIS annotations. Testing of programs such as \textit{pread.c} have shown the same results, with extraneous statements inserted. The cause of these additional statements are unknown. However, it is likely the reason AIS annotations did not support volatile variables was because handling compiler optimisations with volatile variables is quite difficult. It is likely the case that because volatile variables have been annotated, the annotations could not be created without reverting some compiler optimisations. 
 
 \section{Inline Assembly}
 \label{sec:inlineAssembly}
 
-Extended \code{asm} is a GNU Extension supported by many compilers. As such, it presents itself as an excellent method for preserving annotations to assembly. As it allows programmers to write assembly code within the C program, it provides an opportunity to hook in to this functionality and utilise it for annotation purposes. To begin with, a very simple program will be experimented on to find the limits of inline assembly and to assess if it is fit for wpif analysis purposes. To begin with, \textit{comment.c} will be used.
+Extended \code{asm} is a GNU Extension supported by many compilers. As such, it presents itself as an excellent method for preserving annotations to assembly. As it allows programmers to write assembly code within the C program, it provides an opportunity to hook in to this functionality and utilise it for annotation purposes. To begin with, a very simple program will be experimented on to find the limits of inline assembly and to assess if it is fit for wpif analysis purposes. The compiler used was clang, with the install specifications available in Table \ref{tab:clangInstall}. To begin testing, \textit{comment.c} will be used.
+
+\begin{table}
+    \begin{center}
+        \begin{tabularx}{\linewidth} { 
+            | >{\hsize=.7\hsize\linewidth=\hsize}X 
+            | >{\hsize=1.3\hsize\linewidth=\hsize}X  | }
+            \hline
+            OS Name & Ubuntu 20.04.2 LTS \\
+            \hline
+            OS Type & 64-bit \\
+            \hline
+            Processor & Intel® Core™ i7-6700K CPU @ 4.00GHz × 8 \\
+            \hline
+            Target & x86\_64-pc-linux-gnu \\
+            \hline
+            \raggedright
+            Compiler & clang version 10.0.0-4ubuntu1 \\
+            \hline
+        \end{tabularx}
+    \end{center}
+    \caption{Clang install specifications}
+    \label{tab:clangInstall}
+\end{table}
 
 Within the assembly, an inline comment can be created by inserting a \code{\#} at the beginning of the line or comment. The goal with this test is to try and preserve the annotation "CRITICAL COMMENT" to assembly by inserting it as a comment within the assembly. The following line was inserted within the main method of \textit{comment.c}. All the source files used for the inline assembly method can be seen in Appendix \ref{app:InlineC}.
 
@@ -309,24 +373,5 @@ As can be seen, each of these annotations follow the annotation style developed 
 
 The annotator program uses the \code{clang} compiler, however, because of the decoupled nature of the program, any compiler supporting extended \code{asm} could be used by the program. 
 
-TODO:
-\begin{enumerate}
-    \item Install specifications
-\end{enumerate}
-
-Tool building:
-\begin{enumerate}
-    \item not locating variable as requires parsing - left for future work
-    \item Source Code documentation
-\end{enumerate}
-
-
-\clearpage
-
 \section{LLVM Compiler Modification}
 the final technique of modifying the LLVM compiler was not experimented on. This was primarily due to two reasons. To begin with, the primary objective of this thesis is to explore techniques that do not modify the compiler, and instead work alongside the functionality of the compiler to preserve annotations. It is well known and documented that modifying the compiler to preserve annotations is possible and successful, as in the case of Vu et al. \cite{vu2020secure} Additionally, earlier success through the technique of using inline assembly allowed for more time to be allocated to exploring and improving this technique, as seen in \ref{sec:inlineAssembly}. Therefore, evaluating compiler modification for static analysis purposes was not performed in this research.
-
-% TODO: 
-% - Inline assembly
-% - 
-% - Speed Comparison Normal, CompCert, Inline Ass

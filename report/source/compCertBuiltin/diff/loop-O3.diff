@@ -1,0 +1,31 @@
+2c2
+< # Command line: loop.c -S -O3 -o compCert/out/loop-O3.s
+---
+> # Command line: loop.c -S -O3 -o annotated/loop-O3.s
+13a14,20
+> # annotation: "L(mem(\"z\" + 0, 4)) = true"
+> # annotation: "L(mem(\"x\" + 0, 4))= mem(\"z\" + 0, 4) % 2 == 0"
+> 	xorl	%edx, %edx
+> 	xorl	%edi, %edi
+> # annotation: "L(0)= false"
+> # annotation: "_P_0: 0 % 2 == 0"
+> # annotation: "_Gamma_0: 0 -> LOW, 0 -> LOW"
+14a22,26
+> # annotation: "_invariant: %rdx % 2 == 0 & %rdx <= mem(\"z\" + 0, 4)"
+> # annotation: "_Gamma: %rdx -> LOW, %rdi -> (%rdx == mem(\"z\" + 0, 4)), mem(\"z\" + 0, 4) -> LOW"
+> .L101:
+> # annotation: "_invariant: %rdx <= mem(\"z\" + 0, 4)"
+> # annotation: "_Gamma: %rdx -> LOW"
+21c33
+< 	leal	0(,%eax,2), %esi
+---
+> 	leal	0(,%eax,2), %edi
+23c35
+< 	subl	%esi, %ecx
+---
+> 	subl	%edi, %ecx
+25c37,38
+< 	jne	.L100
+---
+> 	jne	.L101
+> 	movl	x(%rip), %edi

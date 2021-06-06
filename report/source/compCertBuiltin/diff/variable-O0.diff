@@ -1,0 +1,46 @@
+2c2
+< # Command line: variable.c -S -O0 -o compCert/out/variable-O0.s
+---
+> # Command line: variable.c -S -O0 -o annotated/variable-O0.s
+12a13
+> # annotation: "%rsi = int"
+13a15
+> # annotation: "%rcx = char"
+15c17,19
+< 	movl	$1, %r8d
+---
+> # annotation: "%rcx = unsigned int"
+> 	movl	$1, %r9d
+> # annotation: "%r9 = short"
+16a21
+> # annotation: "%rax = long"
+18,21c23,28
+< 	cvtsd2ss %xmm1, %xmm3
+< 	cvtss2sd %xmm3, %xmm0
+< 	movsd	.L101(%rip), %xmm2 # 2.37840000000000007
+< 	divsd	%xmm2, %xmm0
+---
+> 	cvtsd2ss %xmm1, %xmm2
+> # annotation: "%xmm2 = float"
+> 	cvtss2sd %xmm2, %xmm0
+> 	movsd	.L101(%rip), %xmm3 # 2.37840000000000007
+> 	divsd	%xmm3, %xmm0
+> # annotation: "%xmm0 = double"
+26,33c33,40
+< 	leal	0(%eax,%esi,1), %r9d
+< 	leal	0(%r9d,%ecx,1), %r10d
+< 	leal	0(%r10d,%r8d,1), %r8d
+< 	cvttss2si %xmm3, %edx
+< 	leal	0(%r8d,%edx,1), %r8d
+< 	cvttsd2si %xmm0, %eax
+< 	leal	0(%r8d,%eax,1), %r11d
+< 	leal	0(%r11d,%edi,1), %eax
+---
+> 	leal	0(%eax,%esi,1), %r8d
+> 	leal	0(%r8d,%ecx,1), %esi
+> 	leal	0(%esi,%r9d,1), %r9d
+> 	cvttss2si %xmm2, %ecx
+> 	leal	0(%r9d,%ecx,1), %r8d
+> 	cvttsd2si %xmm0, %r11d
+> 	leal	0(%r8d,%r11d,1), %r10d
+> 	leal	0(%r10d,%edi,1), %eax

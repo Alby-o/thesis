@@ -1,0 +1,7 @@
+2c2
+< # Command line: deadStoreElimination.c -S -O0 -o compCert/out/deadStoreElimination-O0.s
+---
+> # Command line: deadStoreElimination.c -S -O0 -o annotated/deadStoreElimination-O0.s
+11a12,13
+> 	movl	$43981, %ecx
+> # annotation: "L(%rcx) = high"

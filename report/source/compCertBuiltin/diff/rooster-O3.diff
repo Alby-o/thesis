@@ -1,0 +1,9 @@
+2c2
+< # Command line: rooster.c -S -O3 -o compCert/out/rooster-O3.s
+---
+> # Command line: rooster.c -S -O3 -o annotated/rooster-O3.s
+20a21
+> # annotation: "CRITICAL COMMENT"
+64a66,67
+> # annotation: "L(mem(\"goose\" + 0, 4)) = medium"
+> # annotation: "EXCEPTIONAL"

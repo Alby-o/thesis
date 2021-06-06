@@ -1,0 +1,6 @@
+2c2
+< # Command line: comment.c -S -O0 -o compCert/out/comment-O0.s
+---
+> # Command line: comment.c -S -O0 -o annotated/comment-O0.s
+11a12
+> # annotation: "Critical Comment"
