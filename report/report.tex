@@ -1,4 +1,4 @@
-\documentclass[twocolumn]{article}
+\documentclass[twocolumn]{report}
 \usepackage[utf8]{inputenc}
 \usepackage{biblatex}
 \usepackage{listings}
@@ -61,6 +61,9 @@
 
 \begin{document}
 \maketitle
+
+\tableofcontents
+
 
 \textbf{\textit{Abstract} - Information flow security in concurrency is difficult due to the increasing complexity introduced with multiple threads. Additionally, compiler optimisations can break security guarantees that have been verified in source code. In this paper, we propose a thesis to explore these issues through providing annotations in C source code that propagate through to the binary or assembly. These annotations could then be used to guide a static analysis of information flow security in concurrency. This approach involves (1) capturing C source code annotations provided by the user about the security policy of data and variables and (2) passing these annotations down to lower representations where static analysis tools can be utilised to identify security vulnerabilities in the produced binary. }
 

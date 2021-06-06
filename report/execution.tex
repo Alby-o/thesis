@@ -259,36 +259,46 @@ On line 4, an \code{asm} statement has been inserted, containing the same format
 
 \lstinputlisting[caption=volatile-O3.s]{source/inline/annotated/volatile-O3.s}
 
-Line 11 successfully shows the annotation referencing the global variable \code{x}. However, an additional move statement has been inserted on line 9. This additional move statement was quite puzzling, however, it is inserted due to the nature of the inline \code{asm}. As the compiler does not know or understand the assembly created by the programmer, additional move statements may need to be inserted by the compiler. In this case, the location of \code{x} is within the memory location \code{x(\%rip)}. Because the constraint \code{'X'} has been provided, any operand whatsoever is permitted. As a result, the compiler chose a register as the solution to fill the annotation's requirements. As such, an unnecessary move statement has been inserted. In such a case, the programmer should observe the result and update the \code{asm} restraint to only allow memory locations. Doing so results in the preferred behaviour with only the annotation inserted into the assembly. 
+Line 11 successfully shows the annotation referencing the global variable \code{x}. However, an additional move statement has been inserted on line 9. This additional move statement was quite puzzling, however, it is inserted due to the nature of the inline \code{asm}. As the compiler does not know or understand the assembly created by the programmer, additional move statements may need to be inserted by the compiler. By working backwards, the location of \code{x} can be located within memory at the location \code{x(\%rip)}. Because the constraint \code{'X'} has been provided, any operand whatsoever is permitted. As a result, the compiler chose a register as the solution to fill the annotation's requirements. As such, an unnecessary move statement has been inserted. In such a case, the programmer should observe the result and update the \code{asm} restraint to only allow memory locations. Doing so results in the preferred behaviour with only the annotation inserted into the assembly. 
 
 This form of inline \code{asm} was used to test annotations across the remaining test files. The annotated assembly can be viewed in Appendix \ref{app:inlineAnnotatedAssembly}.
 
 \subsubsection{Quality Analysis}
 
-Although the annotated assembly does contain additional move statements, the program still behaves as expected. However, it does result in heightened difficulty to parse the true location of the variable. One proposed method of handling this is to build a tool to assist in this parsing and analysis. This tool is covered in section \ref{subsubsec:inlineTool}.
+Although the annotated assembly does contain additional move statements, the program still behaves as expected. However, it does result in heightened difficulty to parse the true location of the variable. For a large program with many annotations, systematically identifying where each variable is stored and modifying the constraints until move statements are eliminated is time consuming and impractical. Therefore, an analysis of the program with the additional move statements preserved will be performed. One proposed method of handling this issue is to build a tool to assist in this parsing and analysis. This tool is covered in section \ref{subsubsec:inlineTool}.
 
-TODO: Quality analysis
+To analyse the affect of these additional move statements inserted, big O notation will be used. From the comprehensive testing done, no compiler optimisations were removed when annotations were addeded. Thus, for this analysis, it will be assumed that no optimisations will be reverted when annotations are added. Let \(A(n)\) be the function describing the annotated assembly, and \(B(n)\) be the function describing the non-annotated assembly. Then,
+
+\[B(n) \in \Theta(h(n))\]
+
+As move statements are constant, any move statement is an element of \(\Theta(1)\). Thus, for \(m\) annotations added to the program, 
+
+\[A(n, m) \in \Theta(m \cdot h(n))\]
+
+As can be seen, in the worst case, the program runtime increases linearly with each annotation added. For time critical or concurrent programs, this is unacceptable. Ideally, a static analysis should be possible without slowing the program for each annotation added. The added move statements are only used to perform the analysis and to identify the location of variables within the program. Therefore, one should be able to compile the program with and without annotations. Assuming all optimisations are performed with annotations turned on, an analysis conducted on a program will still be valid when annotations are turned off. As such, a tool can be created to assist in this annotation and analysis process.
 
 \subsubsection{Tool Assisted Annotations}
 \label{subsubsec:inlineTool}
 
+To allow for the program to compile without annotations, the annotations need to be stored where they cannot affect the program output. Littering the program with extended \code{asm} statements results in a difficult and tedious process of removing them once the program is ready to be compiled. Instead, annotations can be written by the programmer using inline comments. As these comments will be ignored by the compiler, the program can be compiled on any compiler supporting their C version. To reference a variable within the annotation, the variable name can be wrapped in a \code{var} keyword. An example of an annotated file can be seen below in \textit{pread.c}.
 
+\lstinputlisting[caption=pread.c]{source/tool/pread.c}
 
-\clearpage
+Annotations have been listed with an inline comment beginning with \code{// annotation:}. Following the declaration of a variable, the annotation can be listed in whatever format the programmer prefers. Line 6 shows the security policy for the variable \code{z}, denoting that its security policy is always high. Whereas, on line 7, the security policy of the variable \code{x} is dependant on the value of variable \code{z}. Also shown in this example are all the necessary annotations required for a wpif analysis.
+
+The goal of the tool is to preserve these annotations stored in these comments and compile to a format that allows for 
 
 \begin{enumerate}
     \item Install specifications
-    \item Discuss implications of additional move statements
-    \item Quality Analysis -
-    \item speed comparison
 \end{enumerate}
 
 Tool building:
 \begin{enumerate}
-    \item af
     \item escaping special strings
     \item Source Code documentation
 \end{enumerate}
+
+\clearpage
 
 \subsection{CompCert Builtin Annotations}
 TODO: Revisit compcert using builtin annoations rather than AIS annotations
