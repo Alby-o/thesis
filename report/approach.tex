@@ -2,9 +2,9 @@
 \chapter{Approach}
 The approach was set out by first analysing existing methods of preserving annotations through intermediate representations. These include the:
 \begin{itemize}
-    \item compCert Verified C Compiler, 
+    \item the compCert Verified C Compiler, 
     \item GNU Extension for Extended Inline Assembly, and
-    \item Modifying the LLVM compiler to preserve annotations throughout intermediate representations.
+    \item modifying the LLVM compiler to preserve annotations throughout intermediate representations.
 \end{itemize}
 
 Each of these approaches will be analysed individually for viability across each of the test cases outlined in section \ref{sec:testCases}. For approaches that pass all necessary test cases, a further analysis will be conducted into its suitability and development of any necessary tools to assist in the preservation technique, as outlined in sections \ref{sec:qualityAnalysis} and \ref{sec:toolDevelopment}. Finally, an analysis on the runtime efficiency of the program will be conducted to assess the success of the annotations with various levels of optimisation. The approach for this analysis is outlined in \ref{sec:runtimeEfficiencyOptimisation}.
